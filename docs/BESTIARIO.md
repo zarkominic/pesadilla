@@ -13,9 +13,9 @@ Nada de símbolos religiosos explícitos ni parecidos con el KKK (capirotes oscu
 | SPOS | sargento de escopeta | **El Bandolero** | bandolero de Sierra Morena no muerto: sombrero calañés, manta al hombro, faja, escopeta de dos cañones, cara de calavera | ✅ lote 1 |
 | TROO | imp (bola de fuego) | **La Meiga** | bruja gallega encorvada, harapos y pelo blanco, garras, lanza bolas de fuego verde-amarillo (BAL1) | ✅ lote 1 |
 | SARG | demonio (y espectro) | **El Toro Negro** | toro negro de pesadilla a cuatro patas, cuernos enormes, ojos rojos, banderillas | ✅ lote 1 |
-| SKUL | alma perdida | **El Ánima** | calavera en llamas, de las que van en la Santa Compaña | pendiente |
-| HEAD | cacodemonio | **El Coco** | cabeza flotante deforme con una boca enorme | pendiente |
-| BOSS | barón del infierno | **El Hombre del Saco** | gigantón con saco a la espalda, lanza fuego verde (BAL7) | pendiente |
+| SKUL | alma perdida | **El Ánima** | calavera en llamas, de las que van en la Santa Compaña | ✅ lote 2 |
+| HEAD | cacodemonio | **El Coco** | cabeza flotante deforme con una boca enorme; escupe fuego anaranjado (BAL2) | ✅ lote 2 |
+| BOSS | barón del infierno | **El Hombre del Saco** | gigantón con saco a la espalda, lanza fuego verde (BAL7) | ✅ lote 2 |
 | CYBR | ciberdemonio | **El Gran Cabrón** | macho cabrío gigante del aquelarre (Goya), con cañón | pendiente |
 | SPID | mente maestra araña | **La Tarasca** | dragona de seis patas de las procesiones, con un cañón de fuego | pendiente |
 
@@ -26,9 +26,9 @@ Nada de símbolos religiosos explícitos ni parecidos con el KKK (capirotes oscu
 | PISG/PISF | pistola | **Pistolón de chispa** | ✅ hecho |
 | PUNG | puño | **Puño** (misma mano enguantada) | ✅ lote 1 |
 | SHTG/SHTF + SHOT | escopeta | **Escopeta de caza** de dos cañones | ✅ lote 1 (texto «pump-action» pendiente) |
-| SAWG + CSAW | motosierra | **La hoz** (siega continua) | pendiente |
-| CHGG/CHGF + MGUN | ametralladora | **El órgano de fuego** (cañones en batería) | pendiente |
-| MISG/MISF + LAUN, MISL | lanzacohetes | **Lanzacohetes de feria** (pirotecnia de fallas) | pendiente |
+| SAWG + CSAW | motosierra | **La hoz** (siega continua) | ✅ lote 2 |
+| CHGG/CHGF + MGUN | ametralladora | **El órgano de fuego** (cañones en batería) | ✅ lote 2 |
+| MISG/MISF + LAUN, MISL | lanzacohetes | **Lanzacohetes de feria** (pirotecnia de fallas); el cohete MISL lo usa también el Gran Cabrón | ✅ lote 2 |
 | PLSG/PLSF + PLAS, PLSS/PLSE | rifle de plasma | **Farol de fuegos fatuos** (bolas azules) | pendiente |
 | BFGG/BFGF + BFUG, BFS1/BFE1/BFE2 | BFG | **La Campana de Velilla** (toque que lo arrasa todo) | pendiente |
 
