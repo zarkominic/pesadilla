@@ -28,11 +28,14 @@
   sprites teñidos del zombi y la pistola.
 - Ficha técnica del prototipo: `docs/PROTOTIPO.md` (zombi POSS = 70 sprites; pistola = 4).
 
-## Siguiente paso
-1. Zarko prueba en local: `cd motor/src && python3 -m http.server 8765` → http://localhost:8765/
-2. PROTOTIPO: propuesta de temática + sprites + coste enviada a Zarko; esperar su OK ANTES de generar.
-   PixelLab (conectado por MCP) tiene la suscripción caducada (2026-09-30) y puede ser la cuenta de
-   Arcade → hace falta una clave propia del proyecto (PixelLab o fal) guardada en `secrets/`.
+## En curso (2026-10-16)
+- PROTOTIPO aprobado por Zarko: temática **folk horror español**. **Penitente** (sustituye al zombi POSS,
+  70 sprites) + **pistolón de chispa** (sustituye a la pistola, 4 sprites).
+- Zarko: **nada de PixelLab ni IA de pago** → el arte se dibuja POR CÓDIGO (modelo 3D sencillo con SDF
+  renderizado con numpy en los 8 ángulos, pasado a la paleta de Doom). Coste 0.
+  Scripts: `tools/arte/penitente.py`, `tools/arte/pistolon.py` → PNG en `arte/sprites/` → PWAD con
+  `tools/wad/construir_pwad.py`. Probar: `index.html?pwad=_x.wad&args=-warp%201%201`.
+- Después: integrar `pesadilla.wad` en la página (PWADS por defecto en index.html) y enseñárselo a Zarko.
 
 ## Pendiente para publicar
 - Build release: quitar `-g` (configure.ac:29) y `-gsource-map --source-map-base /` (configure.ac:118):
