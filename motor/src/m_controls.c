@@ -40,7 +40,7 @@ int key_speed = KEY_RSHIFT;
 int key_strafe_alt = KEY_RALT;
 int key_speed_alt = KEY_RSHIFT;
 int key_fullscreen = 'f';
-int key_use_alt = 'e';        // PESADILLA: second "use" key (Space and E)
+int key_use_alt = KEY_ENTER;  // PESADILLA: second "use" key (E and Enter)
 
 //
 // Heretic keyboard controls
@@ -125,7 +125,7 @@ int mousebnextweapon = -1;
 int mousebinvleft = -1;
 int mousebinvright = -1;
 
-int key_message_refresh = KEY_ENTER;
+int key_message_refresh = '/';  // PESADILLA: Enter is the second "use" key
 int key_pause = KEY_PAUSE;
 int key_demo_quit = 'q';
 int key_spy = KEY_F12;

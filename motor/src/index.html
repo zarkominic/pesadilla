@@ -177,10 +177,10 @@
                 <table>
                     <tr><td>Moverse</td><td>W A S D o flechas</td></tr>
                     <tr><td>Girar</td><td>ratón o ← →</td></tr>
-                    <tr><td>Disparar</td><td>clic izquierdo o Ctrl</td></tr>
-                    <tr><td>Usar / abrir</td><td>Espacio o E (también para reaparecer)</td></tr>
+                    <tr><td>Disparar</td><td>clic izquierdo o Espacio</td></tr>
+                    <tr><td>Usar / abrir</td><td>E o Enter (también para reaparecer)</td></tr>
                     <tr><td>Correr</td><td>Mayúsculas</td></tr>
-                    <tr><td>Paso lateral</td><td>A D, o Alt + ← →</td></tr>
+                    <tr><td>Paso lateral</td><td>A D, o C / Alt + ← →</td></tr>
                     <tr><td>Armas</td><td>1 – 7</td></tr>
                     <tr><td>Mapa</td><td>Tab</td></tr>
                     <tr><td>Menú y pausa</td><td>Esc (también suelta el ratón)</td></tr>
@@ -201,7 +201,7 @@
             var PERSIST = "/libsdl/pesadilla";
             // Sube este número si cambian los valores de fábrica de default.cfg (p. ej. las teclas):
             // la próxima vez se sustituye la copia guardada del jugador.
-            var VERSION_CFG = "1";
+            var VERSION_CFG = "2";
             // Solo para pruebas en local: index.html?args=-warp%201%201 añade parámetros del motor.
             var extra = (new URLSearchParams(location.search).get("args") || "").split(" ").filter(Boolean);
             var commonArgs = ["-iwad", "doom1.wad", "-window", "-nogui", "-nomusic", "-config", PERSIST + "/default.cfg"].concat(extra);

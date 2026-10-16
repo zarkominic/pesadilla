@@ -342,6 +342,17 @@ static void HandleWindowEvent(SDL_WindowEvent *event)
             screenvisible = false;
             break;
 
+        // PESADILLA: a hidden browser tab pauses the game too (in case the
+        // tab is hidden without losing focus). The screen stays "visible" so
+        // that it is drawn again as soon as the tab comes back.
+
+        case SDL_WINDOWEVENT_HIDDEN:
+            if (focuslost_callback != NULL)
+            {
+                focuslost_callback();
+            }
+            break;
+
         case SDL_WINDOWEVENT_MAXIMIZED:
         case SDL_WINDOWEVENT_RESTORED:
             screenvisible = true;

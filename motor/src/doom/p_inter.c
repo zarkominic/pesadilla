@@ -712,6 +712,8 @@ P_KillMobj
 	target->flags &= ~MF_SOLID;
 	target->player->playerstate = PST_DEAD;
 	P_DropWeapon (target->player);
+	// PESADILLA: tell the player how to restart (only BT_USE respawns).
+	target->player->message = "Pulsa E o Enter para reaparecer";
 
 	if (target->player == &players[consoleplayer]
 	    && automapactive)
