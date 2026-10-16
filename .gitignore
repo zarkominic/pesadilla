@@ -1,0 +1,27 @@
+secrets/
+wads/
+*.wad
+motor/src/websockets-doom.*
+motor/src/*.wasm
+.DS_Store
+# Generados por autotools / emscripten al compilar
+motor/autom4te.cache/
+motor/aclocal.m4
+motor/configure
+motor/config.*
+motor/compile
+motor/depcomp
+motor/install-sh
+motor/missing
+motor/stamp-h1
+motor/libtool
+motor/ltmain.sh
+Makefile
+Makefile.in
+*.o
+*.a
+.deps/
+motor/src/websockets-doom.wasm.map
+# Copias duplicadas que crea la sincronización de iCloud
+* 2
+* 2.*
