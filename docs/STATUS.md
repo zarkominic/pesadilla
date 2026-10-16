@@ -41,7 +41,9 @@
   Motores comunes: `tools/arte/sdf.py` (criaturas) y `tools/arte/arma1p.py` (armas).
 - Pendiente del lote 1 (menor): apoyo de 0-3 px distinto en cadáveres del Bandolero/Toro; texto
   «Got the pump-action shotgun!» (cambiarlo con el resto de textos).
-- Siguiente: enseñárselo a Zarko y, con su OK, lote 2 (Ánima, Coco, Hombre del Saco, hoz, órgano de fuego…).
+- Zarko vio el lote 1 y dijo «Continúa» → **lote 2 en curso** (agentes): Ánima (SKUL), Coco (HEAD + BAL2),
+  Hombre del Saco (BOSS + BAL7), hoz (SAWG/CSAW), órgano de fuego (CHGG/CHGF/MGUN), lanzacohetes de feria
+  (MISG/MISF/LAUN + cohete MISL). Lote 3 después: Gran Cabrón (CYBR), Tarasca (SPID), farol (plasma), campana (BFG).
 
 ## Pendiente para publicar
 - Build release: quitar `-g` (configure.ac:29) y `-gsource-map --source-map-base /` (configure.ac:118):
