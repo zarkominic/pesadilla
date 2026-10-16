@@ -22,6 +22,9 @@
 #include <string.h>
 
 #include "SDL.h"
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
 #include "opl.h"
 #include "opl_internal.h"
@@ -493,10 +496,20 @@ void OPL_Delay(uint64_t us)
 
     SDL_LockMutex(delay_data.mutex);
 
+#ifdef __EMSCRIPTEN__
+    // PESADILLA: in the browser there are no threads, the OPL emulator is
+    // advanced by the SDL audio callback, which runs on this same (main)
+    // thread. SDL_CondWait would block forever; yield with Asyncify instead.
+    while (!delay_data.finished)
+    {
+        emscripten_sleep(1);
+    }
+#else
     while (!delay_data.finished)
     {
         SDL_CondWait(delay_data.cond, delay_data.mutex);
     }
+#endif
 
     SDL_UnlockMutex(delay_data.mutex);
 

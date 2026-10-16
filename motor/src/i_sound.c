@@ -36,7 +36,10 @@ int snd_samplerate = 44100;
 // Maximum number of bytes to dedicate to allocated sound effects.
 // (Default: 64MB)
 
-int snd_cachesize = 64 * 1024 * 1024;
+// PESADILLA: 16 MB, not 64: the web build has a fixed 64 MB heap and malloc
+// aborts instead of failing, so a cache as big as the heap could crash it.
+// (Freedoom1's sounds take 14.8 MB once expanded to 48 kHz.)
+int snd_cachesize = 16 * 1024 * 1024;
 
 // Config variable that controls the sound buffer size.
 // We default to 28ms (1000 / 35fps = 1 buffer per tic).

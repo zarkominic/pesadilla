@@ -204,7 +204,7 @@
             var VERSION_CFG = "2";
             // Solo para pruebas en local: index.html?args=-warp%201%201 añade parámetros del motor.
             var extra = (new URLSearchParams(location.search).get("args") || "").split(" ").filter(Boolean);
-            var commonArgs = ["-iwad", "doom1.wad", "-window", "-nogui", "-nomusic", "-config", PERSIST + "/default.cfg"].concat(extra);
+            var commonArgs = ["-iwad", "doom1.wad", "-window", "-nogui", "-config", PERSIST + "/default.cfg"].concat(extra);
 
             var $ = (id) => document.getElementById(id);
 
