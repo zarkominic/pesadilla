@@ -26,7 +26,8 @@ gratis (itch.io o web propia).
 
 1. Responde en **español**. Zarko sigue a menudo desde el móvil: mensajes cortos, imágenes con
    SendUserFile (nunca solo la ruta).
-2. **Gasto de IA (REGLA FIRME):** antes de cualquier generación de pago (fal u otro), dar a Zarko
+2. **Arte:** Zarko prefiere arte DIBUJADO POR CÓDIGO (tools/arte/*.py), sin PixelLab ni IA de pago.
+   **Gasto de IA (REGLA FIRME), si algún día se usa:** antes de cualquier generación de pago (fal u otro), dar a Zarko
    la estimación (nº de imágenes/clips y $) y esperar su OK. Nada de agentes generando en paralelo.
    Si se usa fal, con una **clave de fal propia de este proyecto** (no la de Arcade), guardada en
    `secrets/` (que está en .gitignore y NUNCA se sube).
@@ -49,8 +50,8 @@ cd src && python3 -m http.server 8765      # abrir http://localhost:8765/
 # Volver a bajar Freedoom (si falta wads/)
 tools/descargar_freedoom.sh
 
-# Arte propio: PNG → PWAD (ver tools/wad/README.md)
-~/.venvs/pesadilla/bin/python tools/wad/construir_pwad.py --iwad wads/freedoom-0.13.0/freedoom1.wad --arte arte/sprites --salida build/pesadilla.wad
+# Arte propio (dibujado por código, sin IA de pago): regenera arte/sprites/*.png y motor/src/pesadilla.wad
+tools/arte/construir.sh          # necesita ~/.venvs/pesadilla con numpy y Pillow (tools/wad/README.md)
 ```
 
 ## Cómo funciona la versión web (motor/src/index.html)

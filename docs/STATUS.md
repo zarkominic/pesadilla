@@ -28,14 +28,15 @@
   sprites teñidos del zombi y la pistola.
 - Ficha técnica del prototipo: `docs/PROTOTIPO.md` (zombi POSS = 70 sprites; pistola = 4).
 
-## En curso (2026-10-16)
-- PROTOTIPO aprobado por Zarko: temática **folk horror español**. **Penitente** (sustituye al zombi POSS,
-  70 sprites) + **pistolón de chispa** (sustituye a la pistola, 4 sprites).
-- Zarko: **nada de PixelLab ni IA de pago** → el arte se dibuja POR CÓDIGO (modelo 3D sencillo con SDF
-  renderizado con numpy en los 8 ángulos, pasado a la paleta de Doom). Coste 0.
-  Scripts: `tools/arte/penitente.py`, `tools/arte/pistolon.py` → PNG en `arte/sprites/` → PWAD con
-  `tools/wad/construir_pwad.py`. Probar: `index.html?pwad=_x.wad&args=-warp%201%201`.
-- Después: integrar `pesadilla.wad` en la página (PWADS por defecto en index.html) y enseñárselo a Zarko.
+- **Prototipo de arte hecho y DENTRO del juego** (2026-10-16): temática folk horror español, dibujado por
+  código (sin IA de pago, decisión de Zarko): **el Penitente** sustituye al zombi (POSS, 70 sprites) y **el
+  pistolón de chispa** a la pistola (4). `tools/arte/construir.sh` regenera todo; la página carga
+  `pesadilla.wad` de serie. Batería de 18 pruebas OK con el arte cargado.
+
+## Siguiente paso
+1. Zarko mira el prototipo (http://localhost:8765/) y decide el estilo: seguir así, retocar (colores,
+   tamaño, más detalle) o cambiar de enfoque.
+2. Con el estilo decidido: resto de enemigos, armas, texturas y sonidos propios (presupuestar sprites).
 
 ## Pendiente para publicar
 - Build release: quitar `-g` (configure.ac:29) y `-gsource-map --source-map-base /` (configure.ac:118):
