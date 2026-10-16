@@ -100,7 +100,7 @@
 
 #include <inttypes.h>
 
-#if defined(__cplusplus) || defined(__bool_true_false_are_defined)
+#if defined(__cplusplus)
 
 // Use builtin bool type with C++.
 
@@ -108,11 +108,23 @@ typedef bool boolean;
 
 #else
 
-typedef enum 
+// PESADILLA (2026-10-16): boolean must have the same size in every file.
+// With Emscripten 6, <emscripten.h> pulls in <stdbool.h>, so the files that
+// include it before this header used to get a 1-byte bool while the rest got
+// a 4-byte enum: shared globals such as playeringame[] were then read with
+// the wrong layout and the game crashed on the first tic. Always use an int.
+
+typedef int boolean;
+
+#if !defined(__bool_true_false_are_defined)
+enum
 {
-    false, 
+    false,
     true
-} boolean;
+};
+#endif
+
+_Static_assert(sizeof(boolean) == 4, "boolean must be 4 bytes everywhere");
 
 #endif
 
