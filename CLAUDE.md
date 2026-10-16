@@ -68,8 +68,8 @@ tools/descargar_freedoom.sh
 
 ## Ojo: iCloud
 
-`~/Documents` se sincroniza con iCloud y, al compilar, a veces crea copias «fichero 2» / «fichero 2.ext».
-Están en .gitignore; si molestan, `find . -name "* 2*" -not -path "./.git/*" -delete`.
+`~/Documents` se sincroniza con iCloud y, al compilar, a veces crea copias «fichero 2» / «fichero 2.ext» (o 3, 4…).
+Están en .gitignore; si molestan, `find . -name "* [0-9]*" -not -path "./.git/*" -delete`.
 
 ## Estado
 
