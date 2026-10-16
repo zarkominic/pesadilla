@@ -48,6 +48,11 @@ cd src && python3 -m http.server 8000      # abrir http://localhost:8000/
 tools/descargar_freedoom.sh
 ```
 
+## Ojo: iCloud
+
+`~/Documents` se sincroniza con iCloud y, al compilar, a veces crea copias «fichero 2» / «fichero 2.ext».
+Están en .gitignore; si molestan, `find . -name "* 2*" -not -path "./.git/*" -delete`.
+
 ## Estado
 
 Ver [`docs/STATUS.md`](docs/STATUS.md).
