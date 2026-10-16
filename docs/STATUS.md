@@ -34,12 +34,14 @@
   `pesadilla.wad` de serie. Batería de 18 pruebas OK con el arte cargado.
 
 ## En curso
-- Zarko aprobó el estilo (2026-10-16): seguir igual con el resto de enemigos y armas. Plan y temática de
-  cada pieza en `docs/BESTIARIO.md`. Motor común de criaturas: `tools/arte/sdf.py`.
-- **Lote 1** (agentes en paralelo): Bandolero (SPOS), Meiga + bola de fuego (TROO, BAL1), Toro Negro
-  (SARG), escopeta de caza (SHTG/SHTF/SHOT) y puño (PUNG), con motor común de armas `tools/arte/arma1p.py`.
-  Después: revisión, integrar (construir.sh), probar en el juego y enseñárselo a Zarko ANTES del lote 2.
-- Si la sesión se corta: los scripts a medias quedan en tools/arte/ y los PNG en arte/sprites/.
+- Zarko aprobó el estilo (2026-10-16): seguir igual con el resto. Plan y estado en `docs/BESTIARIO.md`.
+- **Lote 1 hecho y dentro del juego** (307 sprites en `pesadilla.wad`, batería 18/18 OK): Bandolero (SPOS),
+  Meiga + bola de fuego (TROO, BAL1), Toro Negro (SARG, también el espectro), escopeta de caza
+  (SHTG/SHTF/SHOT) y puño (PUNG). Revisado por un director de arte (agente) y corregido.
+  Motores comunes: `tools/arte/sdf.py` (criaturas) y `tools/arte/arma1p.py` (armas).
+- Pendiente del lote 1 (menor): apoyo de 0-3 px distinto en cadáveres del Bandolero/Toro; texto
+  «Got the pump-action shotgun!» (cambiarlo con el resto de textos).
+- Siguiente: enseñárselo a Zarko y, con su OK, lote 2 (Ánima, Coco, Hombre del Saco, hoz, órgano de fuego…).
 
 ## Pendiente para publicar
 - Build release: quitar `-g` (configure.ac:29) y `-gsource-map --source-map-base /` (configure.ac:118):

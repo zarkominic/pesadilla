@@ -10,9 +10,9 @@ Nada de símbolos religiosos explícitos ni parecidos con el KKK (capirotes oscu
 | Sprite | Sustituye a | Nuestro enemigo | Idea | Estado |
 |---|---|---|---|---|
 | POSS | zombi | **El Penitente** | nazareno con capirote granate y trabuco | ✅ hecho |
-| SPOS | sargento de escopeta | **El Bandolero** | bandolero de Sierra Morena no muerto: sombrero calañés, manta al hombro, faja, escopeta de dos cañones, cara de calavera | lote 1 |
-| TROO | imp (bola de fuego) | **La Meiga** | bruja gallega encorvada, harapos y pelo blanco, garras, lanza bolas de fuego verde-amarillo (BAL1) | lote 1 |
-| SARG | demonio (y espectro) | **El Toro Negro** | toro negro de pesadilla, cuernos enormes, ojos rojos, embiste y muerde | lote 1 |
+| SPOS | sargento de escopeta | **El Bandolero** | bandolero de Sierra Morena no muerto: sombrero calañés, manta al hombro, faja, escopeta de dos cañones, cara de calavera | ✅ lote 1 |
+| TROO | imp (bola de fuego) | **La Meiga** | bruja gallega encorvada, harapos y pelo blanco, garras, lanza bolas de fuego verde-amarillo (BAL1) | ✅ lote 1 |
+| SARG | demonio (y espectro) | **El Toro Negro** | toro negro de pesadilla a cuatro patas, cuernos enormes, ojos rojos, banderillas | ✅ lote 1 |
 | SKUL | alma perdida | **El Ánima** | calavera en llamas, de las que van en la Santa Compaña | pendiente |
 | HEAD | cacodemonio | **El Coco** | cabeza flotante deforme con una boca enorme | pendiente |
 | BOSS | barón del infierno | **El Hombre del Saco** | gigantón con saco a la espalda, lanza fuego verde (BAL7) | pendiente |
@@ -24,8 +24,8 @@ Nada de símbolos religiosos explícitos ni parecidos con el KKK (capirotes oscu
 | Sprites | Sustituye a | Nuestra arma | Estado |
 |---|---|---|---|
 | PISG/PISF | pistola | **Pistolón de chispa** | ✅ hecho |
-| PUNG | puño | **Puño** (misma mano enguantada) | lote 1 |
-| SHTG/SHTF + SHOT | escopeta | **Escopeta de caza** de dos cañones | lote 1 |
+| PUNG | puño | **Puño** (misma mano enguantada) | ✅ lote 1 |
+| SHTG/SHTF + SHOT | escopeta | **Escopeta de caza** de dos cañones | ✅ lote 1 (texto «pump-action» pendiente) |
 | SAWG + CSAW | motosierra | **La hoz** (siega continua) | pendiente |
 | CHGG/CHGF + MGUN | ametralladora | **El órgano de fuego** (cañones en batería) | pendiente |
 | MISG/MISF + LAUN, MISL | lanzacohetes | **Lanzacohetes de feria** (pirotecnia de fallas) | pendiente |
@@ -37,5 +37,6 @@ Nada de símbolos religiosos explícitos ni parecidos con el KKK (capirotes oscu
 - Criaturas: `tools/arte/sdf.py` (motor común: primitivas SDF, render, paleta, contorno, `cli`).
   Ejemplo completo: `tools/arte/penitente.py`. Todos los fotogramas que usa `info.c`, con 8
   ángulos REALES para los que rotan y de frente (ángulo 0) para muertes.
-- Armas en primera persona: ejemplo `tools/arte/pistolon.py` (offsets en `arte/sprites/offsets.json`).
+- Armas en primera persona: motor común `tools/arte/arma1p.py`; ejemplos `pistolon.py`, `escopeta.py`, `puno.py`
+  (offsets en `arte/sprites/offsets.json`).
 - `tools/arte/construir.sh` regenera todo y el WAD; ver `docs/PROTOTIPO.md` para ángulos y tamaños.

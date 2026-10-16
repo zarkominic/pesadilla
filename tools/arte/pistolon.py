@@ -3,12 +3,11 @@
 
 Uso:
     ~/.venvs/pesadilla/bin/python tools/arte/pistolon.py --salida arte/sprites
-    (opcional: --vista <carpeta> guarda además una hoja de contactos y simulaciones de pantalla)
 
 Escribe PISGA0.png (reposo), PISGB0.png (disparo), PISGC0.png (vuelta), PISFA0.png (fogonazo) y
 añade sus desplazamientos a <salida>/offsets.json (conserva las claves de otros lumps).
 
-Cómo se dibuja (determinista, sin IA ni azar no sembrado):
+Cómo se dibuja (determinista, sin IA ni azar no sembrado), con el motor común arma1p.py:
 - Modelo 3D hecho con primitivas SDF (cápsulas, conos, cajas redondeadas, elipsoides) en
   centímetros: cañón de hierro con boca de latón, caja de nogal con culata curvada, llave de
   chispa (pie de gato, batería, cazoleta) y mano derecha con guante de cuero y manga.
@@ -22,120 +21,19 @@ Cómo se dibuja (determinista, sin IA ni azar no sembrado):
   no hay saltos entre fotogramas y el fogonazo cae en la boca del cañón del fotograma B.
 """
 import argparse
-import json
 import math
 import os
+import sys
 
 import numpy as np
-from PIL import Image
 
-# ---------------------------------------------------------------------------------------------
-# Paleta: rampas de colores EXACTOS de PLAYPAL (de oscuro a claro)
-# ---------------------------------------------------------------------------------------------
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from arma1p import (RAMPAS, Arma, bocanada, capsula, caja, dibujar, elipsoide,  # noqa: E402,F401
+                    elipsoide_ejes, fogonazo, girar, guardar, guardar_offsets, matriz_canon,
+                    retroceso, rot_x, smin, tubo_z, v3, veta)
+from arma1p import proyectar as proyectar_rt  # noqa: E402
 
-
-def _hx(*cols):
-    return [((c >> 16) & 255, (c >> 8) & 255, c & 255) for c in cols]
-
-
-RAMPAS = {
-    # hierro: grises neutros 111..82
-    'hierro': _hx(0x1b1b1b, 0x2f2f2f, 0x434343, 0x5b5b5b, 0x777777, 0x979797, 0xbfbfbf, 0xdfdfdf),
-    # latón: rampa dorada 167..161
-    'laton': _hx(0x372313, 0x732b00, 0x874307, 0x9b5b13, 0xaf7b1f, 0xc39b2f, 0xd7bb43, 0xebdb57),
-    # nogal: marrón cálido 239, 237, 74..66
-    'nogal': _hx(0x1f170b, 0x2f1b0b, 0x432f1b, 0x5f4323, 0x774f2b, 0x8f5f37, 0xa36b3f, 0xb37347),
-    # guante: cuero marrón oscuro, más apagado que la madera
-    'cuero': _hx(0x170f07, 0x2b230f, 0x3f2f17, 0x4b371b, 0x574333, 0x67533f, 0x775f4b, 0x8b735b),
-    # vuelta del guante (ribete más claro)
-    'ribete': _hx(0x2b230f, 0x533f1f, 0x6b4727, 0x7f532f, 0x9b633b, 0xb37347, 0xcf8353, 0xdf9363),
-    # manga: paño granate oscuro
-    'manga': _hx(0x1f170b, 0x430000, 0x5b0707, 0x6b0f0f, 0x7f1b1b, 0x8f2b2b, 0xa33b3b, 0xb34f4f),
-    # pedernal: gris pardo
-    'pedernal': _hx(0x232323, 0x372313, 0x4f3b27, 0x5f4b37, 0x775f4b, 0x8b735b, 0x9f876f, 0xb79f87),
-    # humo
-    'humo': _hx(0x434343, 0x575757, 0x6b6b6b, 0x7f7f7f, 0x979797, 0xababab, 0xc7c7c7, 0xdbdbdb),
-}
 MATS = ['hierro', 'laton', 'nogal', 'cuero', 'ribete', 'manga', 'pedernal']
-CONTORNO = (0x17, 0x0f, 0x07)  # PLAYPAL 2
-
-# Fogonazo (se dibuja a pleno brillo): blanco → amarillo → naranja → rojo oscuro
-FUEGO = _hx(0xffffff, 0xffffd7, 0xffff8f, 0xffff47, 0xffe74b, 0xffc79b, 0xffa35b, 0xff8f3b,
-            0xff7f1b, 0xeb6f0f, 0xd75f0b, 0xc34f00, 0xa73f00, 0x872300)
-
-# ---------------------------------------------------------------------------------------------
-# Primitivas SDF (P: array (N,3) en cm)
-# ---------------------------------------------------------------------------------------------
-
-
-def v3(x, y, z):
-    return np.array([x, y, z], dtype=np.float64)
-
-
-def capsula(P, a, b, ra, rb=None):
-    """Cápsula de a a b con radio que pasa de ra a rb (cono redondeado aproximado)."""
-    rb = ra if rb is None else rb
-    a = np.asarray(a, float)
-    b = np.asarray(b, float)
-    ba = b - a
-    pa = P - a
-    t = np.clip(pa @ ba / (ba @ ba), 0.0, 1.0)
-    q = pa - t[:, None] * ba
-    return np.sqrt((q * q).sum(1)) - (ra + t * (rb - ra))
-
-
-def elipsoide(P, c, r):
-    q = (P - np.asarray(c, float)) / np.asarray(r, float)
-    k0 = np.sqrt((q * q).sum(1))
-    k1 = np.sqrt(((q / np.asarray(r, float)) ** 2).sum(1))
-    return k0 * (k0 - 1.0) / np.maximum(k1, 1e-6)
-
-
-def caja(P, c, h, rr=0.0):
-    q = np.abs(P - np.asarray(c, float)) - (np.asarray(h, float) - rr)
-    return np.sqrt((np.maximum(q, 0) ** 2).sum(1)) + np.minimum(q.max(1), 0) - rr
-
-
-def tubo_z(P, z0, z1, r0, r1, octo=False, cx=0.0, cy=0.0):
-    """Cilindro (u octógono) a lo largo de z, de z0 a z1, radio de r0 a r1."""
-    x = P[:, 0] - cx
-    y = P[:, 1] - cy
-    z = P[:, 2]
-    t = np.clip((z - z0) / (z1 - z0), 0, 1)
-    r = r0 + t * (r1 - r0)
-    if octo:
-        ax, ay = np.abs(x), np.abs(y)
-        d2 = np.maximum(np.maximum(ax, ay), (ax + ay) * 0.70710678) - r
-    else:
-        d2 = np.sqrt(x * x + y * y) - r
-    dz = np.abs(z - (z0 + z1) / 2) - (z1 - z0) / 2
-    return np.sqrt(np.maximum(d2, 0) ** 2 + np.maximum(dz, 0) ** 2) + np.minimum(np.maximum(d2, dz), 0)
-
-
-def smin(a, b, k):
-    h = np.clip(0.5 + 0.5 * (b - a) / k, 0, 1)
-    return b * (1 - h) + a * h - k * h * (1 - h)
-
-
-def rot_x(g):
-    c, s = math.cos(g), math.sin(g)
-    return np.array([[1, 0, 0], [0, c, -s], [0, s, c]])
-
-
-def rot_y(g):
-    c, s = math.cos(g), math.sin(g)
-    return np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]])
-
-
-def rot_z(g):
-    c, s = math.cos(g), math.sin(g)
-    return np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]])
-
-
-def girar(P, pivote, R):
-    """Puntos del espacio del arma → espacio de una pieza girada R alrededor de pivote."""
-    return (P - pivote) @ R + pivote  # R ortogonal: (R^T (p - c))^T = (p - c)^T R
-
 
 # ---------------------------------------------------------------------------------------------
 # El modelo (espacio del arma: origen en la recámara, z hacia la boca, y arriba, x a la derecha)
@@ -156,12 +54,6 @@ ANTEBRAZO = v3(0.5, -0.6, -0.62) / np.linalg.norm([0.5, -0.6, -0.62])
 def en_mano(s, x, f):
     """Punto de la mano: s cm bajando por la empuñadura, x a la derecha, f hacia delante."""
     return G0 + s * GE + x * GX + f * GF
-
-
-def elipsoide_ejes(P, c, ejes, r):
-    """Elipsoide con centro c, ejes (3 vectores unitarios) y semiejes r."""
-    q = (P - c) @ np.stack(ejes, 1)
-    return elipsoide(q, (0, 0, 0), r)
 
 
 def modelo(P, pose):
@@ -258,11 +150,8 @@ def modelo(P, pose):
 
 
 # ---------------------------------------------------------------------------------------------
-# Cámara y raymarching
+# Cámara, luz y materiales (el trazado, la reducción y el color están en arma1p.py)
 # ---------------------------------------------------------------------------------------------
-
-F = 170.0        # distancia focal en píxeles de pantalla (horizontal)
-ASPECTO = 1.2    # los píxeles de Doom se ven 1,2 veces más altos
 
 
 def pose_a_matriz(pose):
@@ -273,97 +162,20 @@ def pose_a_matriz(pose):
     'alabeo' = giro (grados) sobre el eje del cañón (positivo: el costado derecho, el de la llave,
     se inclina hacia arriba).
     """
-    bx, by, bz = pose['recamara']
-    T = np.array([(bx - 160) * bz / F, -(by - 100) * ASPECTO * bz / F, bz])
-    mx, my = pose['boca']
-    u = np.array([(mx - 160) / F, -(my - 100) * ASPECTO / F, 1.0])  # rayo hacia la boca
-    # |Zm·u - T| = LARGO  →  (u·u) Zm² - 2 (u·T) Zm + T·T - LARGO² = 0 (raíz lejana)
-    a, b, c = u @ u, -2 * (u @ T), T @ T - LARGO ** 2
-    zm = (-b + math.sqrt(b * b - 4 * a * c)) / (2 * a)
-    dz = zm * u - T
-    dz /= np.linalg.norm(dz)
-    dx = np.cross([0.0, 1.0, 0.0], dz)
-    dx /= np.linalg.norm(dx)
-    dy = np.cross(dz, dx)
-    g = math.radians(pose['alabeo'])
-    dx, dy = math.cos(g) * dx + math.sin(g) * dy, -math.sin(g) * dx + math.cos(g) * dy
-    R = np.stack([dx, dy, dz], 1)
+    R, T = matriz_canon(pose['recamara'], pose['boca'], LARGO, pose['alabeo'])
     # retroceso: el arma gira (boca arriba) alrededor de la muñeca y se desplaza (cm, cámara)
     giro = pose.get('retroceso', 0.0)
     if giro or 'empuje' in pose:
-        Rr = rot_x(-math.radians(giro))
-        pv = en_mano(4.0, 0.0, -1.0)
-        T = R @ pv - R @ Rr @ pv + T + np.asarray(pose.get('empuje', (0, 0, 0)), float)
-        R = R @ Rr
+        R, T = retroceso(R, T, giro, pose.get('empuje', (0, 0, 0)), en_mano(4.0, 0.0, -1.0))
     return R, T
 
 
 def proyectar(p_arma, pose):
     """Punto del espacio del arma → (x, y) en la pantalla completa 320x200."""
     R, T = pose_a_matriz(pose)
-    q = R @ np.asarray(p_arma, float) + T
-    return 160 + F * q[0] / q[2], 100 - F / ASPECTO * q[1] / q[2]
+    return proyectar_rt(p_arma, R, T)
 
 
-def trazar(pose, x0, y0, w, h, S):
-    """Traza el lienzo [x0, x0+w) x [y0, y0+h) de la pantalla con S x S rayos por píxel."""
-    R, T = pose_a_matriz(pose)
-    xs = x0 + (np.arange(w * S) + 0.5) / S
-    ys = y0 + (np.arange(h * S) + 0.5) / S
-    X, Y = np.meshgrid(xs, ys)
-    D = np.stack([(X - 160) / F, -(Y - 100) * ASPECTO / F, np.ones_like(X)], -1).reshape(-1, 3)
-    D /= np.linalg.norm(D, axis=1, keepdims=True)
-    N = D.shape[0]
-    t = np.full(N, 15.0)
-    hit = np.zeros(N, bool)
-    vivos = np.arange(N)
-    for _ in range(160):
-        if vivos.size == 0:
-            break
-        p = D[vivos] * t[vivos, None]
-        dist, _ = modelo((p - T) @ R, pose)
-        t[vivos] += dist * 0.8
-        acierto = dist < 0.01
-        hit[vivos[acierto]] = True
-        vivos = vivos[~acierto & (t[vivos] < 110)]
-    idx = np.nonzero(hit)[0]
-    P = D[idx] * t[idx, None]
-    Pl = (P - T) @ R
-    _, mat = modelo(Pl, pose)
-    # normal por tetraedro (en espacio del arma) → espacio de cámara
-    e = 0.004
-    ks = np.array([[1, -1, -1], [-1, -1, 1], [-1, 1, -1], [1, 1, 1]], float)
-    n = np.zeros_like(Pl)
-    for k in ks:
-        n += k * modelo(Pl + e * k, pose)[0][:, None]
-    n /= np.linalg.norm(n, axis=1, keepdims=True) + 1e-9
-    n = n @ R.T
-    # oclusión ambiental barata
-    ao = np.ones(len(idx))
-    nl = n @ R
-    for i, s in enumerate([0.15, 0.35, 0.7, 1.2]):
-        dd = modelo(Pl + nl * s, pose)[0]
-        ao -= (s - np.clip(dd, 0, s)) / s * (0.5 ** (i + 1)) * 0.9
-    out = {
-        'hit': hit.reshape(h * S, w * S),
-        'mat': np.full(N, -1), 'n': np.zeros((N, 3)), 'z': np.full(N, np.inf), 'ao': np.ones(N),
-        'pl': np.zeros((N, 3)), 'dir': D,
-    }
-    out['mat'][idx] = mat
-    out['n'][idx] = n
-    out['z'][idx] = P[:, 2]
-    out['ao'][idx] = np.clip(ao, 0.2, 1)
-    out['pl'][idx] = Pl
-    for k in ('mat', 'z', 'ao'):
-        out[k] = out[k].reshape(h * S, w * S)
-    out['n'] = out['n'].reshape(h * S, w * S, 3)
-    out['pl'] = out['pl'].reshape(h * S, w * S, 3)
-    out['dir'] = D.reshape(h * S, w * S, 3)
-    return out
-
-
-LUZ = np.array([-0.55, 0.72, -0.42])
-LUZ /= np.linalg.norm(LUZ)
 BRILLO = {'hierro': (0.55, 30), 'laton': (0.6, 22), 'nogal': (0.15, 12), 'cuero': (0.12, 10),
           'ribete': (0.1, 10), 'manga': (0.0, 1), 'pedernal': (0.3, 20)}
 
@@ -373,23 +185,8 @@ GANANCIA = {'hierro': 0.72, 'laton': 0.9, 'nogal': 0.92, 'cuero': 1.0, 'ribete':
             'pedernal': 0.9}
 
 
-def intensidad(r):
-    """Intensidad de luz continua (0..1+) por sub-píxel."""
-    n = r['n']
-    V = -r['dir']
-    lam = np.clip((n * LUZ).sum(-1), 0, 1)
-    H = LUZ + V
-    H /= np.linalg.norm(H, axis=-1, keepdims=True)
-    nh = np.clip((n * H).sum(-1), 0, 1)
-    I = 0.2 + 0.8 * lam
-    I = I * (0.55 + 0.45 * r['ao'])
-    spec = np.zeros_like(I)
-    for i, m in enumerate(MATS):
-        k, p = BRILLO[m]
-        sel = r['mat'] == i
-        spec[sel] = k * nh[sel] ** p
-    I = I + spec
-    # costuras del dorso del guante: tres pespuntes entre los dedos
+def detalle(arma, r, I):
+    """Costuras del dorso del guante (tres pespuntes entre los dedos) y veta del nogal."""
     pl = r['pl']
     q = pl - G0
     sg, fg, xg = q @ GE, q @ GF, q[..., 0]
@@ -398,145 +195,10 @@ def intensidad(r):
         cos |= (np.abs(sg - s0 - 0.25 * fg) < 0.16) & (xg > 1.2) & (fg > -2.6) & (fg < 1.4)
     sel = (r['mat'] == MATS.index('cuero')) & cos
     I[sel] -= 0.3
-    # veta del nogal: bandas suaves a lo largo de la madera
-    pl = r['pl']
-    veta = np.sin(pl[..., 2] * 2.1 + np.sin(pl[..., 1] * 3.3 + pl[..., 0] * 1.7) * 1.6)
-    sel = r['mat'] == MATS.index('nogal')
-    I[sel] += 0.07 * veta[sel]
-    return I
+    veta(arma, r, I)
 
 
-def reducir(r, S):
-    """Sub-píxeles → píxeles: alfa por mayoría, material mayoritario, intensidad media."""
-    hS, wS = r['hit'].shape
-    h, w = hS // S, wS // S
-    hit = r['hit'].reshape(h, S, w, S).transpose(0, 2, 1, 3).reshape(h, w, S * S)
-    mat = r['mat'].reshape(h, S, w, S).transpose(0, 2, 1, 3).reshape(h, w, S * S)
-    I = intensidad(r).reshape(h, S, w, S).transpose(0, 2, 1, 3).reshape(h, w, S * S)
-    z = r['z'].reshape(h, S, w, S).transpose(0, 2, 1, 3).reshape(h, w, S * S)
-    alfa = hit.mean(-1) >= 0.5
-    cuenta = np.stack([(mat == i).sum(-1) for i in range(len(MATS))], -1)
-    m = cuenta.argmax(-1)
-    sel = mat == m[..., None]
-    Im = np.where(sel, I, 0).sum(-1) / np.maximum(sel.sum(-1), 1)
-    zm = np.where(sel, z, 0).sum(-1) / np.maximum(sel.sum(-1), 1)
-    m = np.where(alfa, m, -1)
-    return alfa, m, Im, zm
-
-
-def desplazar(a, dy, dx, relleno):
-    """Como np.roll pero sin dar la vuelta: lo que entra por el borde es 'relleno'."""
-    out = np.full_like(a, relleno)
-    h, w = a.shape[:2]
-    out[max(dy, 0):h + min(dy, 0), max(dx, 0):w + min(dx, 0)] = a[max(-dy, 0):h + min(-dy, 0), max(-dx, 0):w + min(-dx, 0)]
-    return out
-
-
-def colorear(alfa, m, I, z, contorno=True, bordes=True):
-    h, w = alfa.shape
-    nivel = np.zeros((h, w), int)
-    for i, nombre in enumerate(MATS):
-        n = len(RAMPAS[nombre])
-        sel = m == i
-        nivel[sel] = np.clip(np.floor(I[sel] * GANANCIA[nombre] * (n - 1) + 0.35), 1, n - 1)
-    if bordes:
-        # línea de profundidad: un píxel con un vecino mucho más cercano (o de otra pieza) se oscurece
-        zz = np.where(alfa, z, 1e9)
-        lejos = np.zeros((h, w), bool)
-        for dy, dx in ((0, 1), (0, -1), (1, 0), (-1, 0)):
-            vecino = desplazar(zz, dy, dx, 1e9)
-            vm = desplazar(m, dy, dx, -1)
-            lejos |= alfa & (vecino < zz - 0.9) & (vm >= 0)
-            lejos |= alfa & (vm >= 0) & (vm != m) & (vecino < zz - 0.15)
-        nivel = np.where(lejos, np.maximum(nivel - 3, 0), nivel)
-    img = np.zeros((h, w, 4), np.uint8)
-    for i, nombre in enumerate(MATS):
-        ramp = np.array(RAMPAS[nombre], np.uint8)
-        sel = m == i
-        img[sel, :3] = ramp[nivel[sel]]
-        img[sel, 3] = 255
-    if contorno:
-        borde = np.zeros((h, w), bool)
-        for dy, dx in ((0, 1), (0, -1), (1, 0), (-1, 0)):
-            borde |= desplazar(alfa, dy, dx, False)
-        borde &= ~alfa
-        borde[-1, :] = False  # el borde inferior sale de la pantalla
-        img[borde, :3] = CONTORNO
-        img[borde, 3] = 255
-    return img
-
-
-# ---------------------------------------------------------------------------------------------
-# Humo y fogonazo (2D, deterministas)
-# ---------------------------------------------------------------------------------------------
-
-
-def bocanada(img, cx, cy, radios, semilla, nivel_max=6):
-    """Dibuja una bocanada de humo (círculos sombreados de la rampa 'humo') sobre img (RGBA)."""
-    h, w = img.shape[:2]
-    rng = np.random.default_rng(semilla)
-    ramp = np.array(RAMPAS['humo'], np.uint8)
-    mascara = np.zeros((h, w), bool)
-    luz = np.zeros((h, w))
-    Y, X = np.mgrid[0:h, 0:w]
-    for (dx, dy, r) in radios:
-        jx, jy = rng.uniform(-0.6, 0.6, 2)
-        ex, ey = cx + dx + jx, cy + dy + jy
-        dd = np.sqrt((X - ex) ** 2 + ((Y - ey) * 1.0) ** 2)
-        dentro = dd <= r
-        # luz desde arriba-izquierda dentro de cada bola
-        l = 1 - np.clip(np.sqrt((X - ex + r * 0.4) ** 2 + (Y - ey + r * 0.45) ** 2) / (1.6 * r), 0, 1)
-        luz = np.where(dentro, np.maximum(luz, l), luz)
-        mascara |= dentro
-    nivel = np.clip(np.round(1 + luz * (nivel_max - 1)), 1, nivel_max).astype(int)
-    # tramado suave en el borde: píxeles sueltos para que no parezca una mancha sólida
-    img[mascara, :3] = ramp[nivel[mascara]]
-    img[mascara, 3] = 255
-    borde = np.zeros((h, w), bool)
-    for dy, dx in ((0, 1), (0, -1), (1, 0), (-1, 0)):
-        borde |= desplazar(mascara, dy, dx, False)
-    borde &= ~mascara & (img[..., 3] == 0)
-    img[borde, :3] = ramp[0]
-    img[borde, 3] = 255
-
-
-def fogonazo(tam=34, semilla=7):
-    """Fogonazo de pólvora negra visto desde atrás: núcleo blanco, llamas en estrella, chispas."""
-    rng = np.random.default_rng(semilla)
-    S = 4
-    n = tam * S
-    c = (n - 1) / 2
-    Y, X = np.mgrid[0:n, 0:n]
-    dx, dy = (X - c) / S, (Y - c) / S * 1.0
-    r = np.sqrt(dx ** 2 + (dy * 1.08) ** 2)
-    ang = np.arctan2(dy, dx)
-    # radio del borde de la llama en función del ángulo: 7 lenguas irregulares
-    k = 7
-    fases = rng.uniform(0, 2 * np.pi, 3)
-    borde = (9.0 + 3.6 * np.maximum(0, np.cos(k * ang + fases[0])) ** 3
-             + 1.6 * np.sin(3 * ang + fases[1]) + 1.0 * np.sin(11 * ang + fases[2]))
-    borde *= tam / 34
-    t = r / borde
-    dentro = t <= 1.0
-    # reducción por mayoría
-    def red(a):
-        return a.reshape(tam, S, tam, S).mean((1, 3))
-    alfa = red(dentro.astype(float)) >= 0.5
-    tt = red(np.where(dentro, t, 1.0))
-    idx = np.clip((tt ** 1.2) * (len(FUEGO) - 1) + 0.2, 0, len(FUEGO) - 1).astype(int)
-    img = np.zeros((tam, tam, 4), np.uint8)
-    col = np.array(FUEGO, np.uint8)
-    img[alfa, :3] = col[idx[alfa]]
-    img[alfa, 3] = 255
-    # chispas sueltas alrededor
-    for _ in range(14):
-        a = rng.uniform(0, 2 * np.pi)
-        rr = rng.uniform(0.8, 1.25) * 15 * tam / 34
-        sx, sy = int(round(tam / 2 + math.cos(a) * rr)), int(round(tam / 2 + math.sin(a) * rr))
-        if 0 <= sx < tam and 0 <= sy < tam and img[sy, sx, 3] == 0:
-            img[sy, sx, :3] = col[rng.integers(1, 6)]
-            img[sy, sx, 3] = 255
-    return img
+ARMA = Arma(MATS, modelo, BRILLO, GANANCIA, detalle)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -575,9 +237,8 @@ POSES = {
 def render_fotograma(nombre, S=4):
     x0, y0, w, h = LIENZO
     pose = POSES[nombre]
-    r = trazar(pose, x0, y0, w, h, S)
-    alfa, m, I, z = reducir(r, S)
-    img = colorear(alfa, m, I, z)
+    R, T = pose_a_matriz(pose)
+    img = dibujar(ARMA, pose, R, T, LIENZO, S)
     # humo
     if nombre == 'PISGB0':
         px, py = proyectar(PIVOTE_BATERIA + (0.3, 0.6, -0.6), pose)
@@ -590,16 +251,6 @@ def render_fotograma(nombre, S=4):
         bocanada(img, mx - x0, my - y0 - 3, [(0, 0, 3.4), (-3, -2, 2.6), (3, -3, 2.8), (0, -6, 2.4), (-2, -8, 1.6)],
                  semilla=9, nivel_max=6)
     return img
-
-
-def guardar(img, x0, y0, ruta):
-    """Recorta lo transparente y devuelve los desplazamientos de Doom (izq, sup) del recorte."""
-    a = img[..., 3] > 0
-    ys, xs = np.nonzero(a)
-    cx0, cx1, cy0, cy1 = xs.min(), xs.max() + 1, ys.min(), ys.max() + 1
-    Image.fromarray(img[cy0:cy1, cx0:cx1], 'RGBA').save(ruta)
-    sx, sy = x0 + cx0, y0 + cy0          # esquina superior izquierda en pantalla completa
-    return [int(1 - sx), int(32 - sy)], (int(sx), int(sy), int(cx1 - cx0), int(cy1 - cy0))
 
 
 def main():
@@ -628,15 +279,7 @@ def main():
         offsets['PISFA0'], g = guardar(f, sx, sy, ruta)
         print(f'PISFA0: {g[2]}x{g[3]} en pantalla ({g[0]}, {g[1]}) offsets {offsets["PISFA0"]}')
     # offsets.json: conserva las claves de otros lumps
-    ruta = os.path.join(args.salida, 'offsets.json')
-    todos = {}
-    if os.path.exists(ruta):
-        with open(ruta) as fh:
-            todos = json.load(fh)
-    todos.update(offsets)
-    with open(ruta, 'w') as fh:
-        json.dump(dict(sorted(todos.items())), fh, indent=1)
-        fh.write('\n')
+    guardar_offsets(args.salida, offsets)
 
 
 if __name__ == '__main__':
