@@ -6,7 +6,7 @@ Uso:
     (opcional: --vista <carpeta> guarda además una hoja de contactos y simulaciones de pantalla)
 
 Escribe PUNGA0.png (reposo) y PUNGB0-D0.png (el puñetazo; en el juego: A reposo y B, C, D, C, B
-al golpear, con el golpe en C) y añade sus desplazamientos a <salida>/offsets.json.
+al golpear, con el golpe en C) y añade sus desplazamientos a <salida>/offsets_<script>.json.
 
 Es la misma mano derecha del pistolón (guante de cuero con pespuntes, manopla con ribete claro,
 manga granate) cerrada en puño, con el motor común arma1p.py: modelo SDF en centímetros, trazado

@@ -71,6 +71,10 @@ tools/arte/construir.sh          # necesita ~/.venvs/pesadilla con numpy y Pillo
 
 `~/Documents` se sincroniza con iCloud y, al compilar, a veces crea copias «fichero 2» / «fichero 2.ext» (o 3, 4…).
 Están en .gitignore; si molestan, `find . -name "* [0-9]*" -not -path "./.git/*" -delete`.
+**iCloud borró objetos de `.git`** (2026-10-16; se recuperaron con `git fetch --refetch origin`). Desde entonces
+la base de datos de git vive FUERA de iCloud: `.git` es un fichero que apunta a `~/git-dirs/pesadilla.git`
+(`git init --separate-git-dir`). Si se clona en otro sitio, hacer lo mismo. Si git dice «invalid object» o
+«missing blob»: `git fetch --refetch origin` y `git fsck`.
 
 ## Estado
 

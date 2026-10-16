@@ -7,7 +7,7 @@ Uso:
 
 - Cada PNG se llama como el lump que sustituye (POSSA1.png, PISGA0.png…), con fondo transparente.
 - Desplazamientos (dónde «se apoya» el sprite), por orden de preferencia:
-  1. arte/sprites/offsets.json: {"POSSA1": [izq, sup], ...}
+  1. arte/sprites/offsets.json u offsets_<pieza>.json: {"POSSA1": [izq, sup], ...}
   2. Si el lump existe en el IWAD: se conserva su punto de apoyo
      (monstruos: centro de los pies; armas: centro del borde inferior en pantalla).
   3. Si no: centro horizontal y pies 4 px por debajo del origen.
@@ -60,8 +60,11 @@ def main():
     geo = iwad_patch_geometry(iwad_lumps)
     mapper = PaletteMapper(read_palette(args.iwad))
 
-    offsets_path = os.path.join(args.arte, 'offsets.json')
-    explicit = json.load(open(offsets_path)) if os.path.exists(offsets_path) else {}
+    # offsets.json y offsets_<pieza>.json (cada script de arma escribe el suyo).
+    explicit = {}
+    for fn in sorted(os.listdir(args.arte)):
+        if fn == 'offsets.json' or (fn.startswith('offsets_') and fn.endswith('.json')):
+            explicit.update(json.load(open(os.path.join(args.arte, fn))))
 
     sprites = []
     for fn in sorted(os.listdir(args.arte)):

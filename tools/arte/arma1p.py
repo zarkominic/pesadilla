@@ -33,6 +33,7 @@ Usuarios: pistolon.py (PISG/PISF), escopeta.py (SHTG/SHTF/SHOT), puno.py (PUNG).
 import json
 import math
 import os
+import sys
 
 import numpy as np
 from PIL import Image
@@ -731,25 +732,32 @@ def guardar(img, x0, y0, ruta):
     return [int(1 - sx), int(32 - sy)], (int(sx), int(sy), int(cx1 - cx0), int(cy1 - cy0))
 
 
-def guardar_offsets(carpeta, offsets):
-    """Añade/actualiza 'offsets' en <carpeta>/offsets.json conservando las claves de otros lumps."""
-    ruta = os.path.join(carpeta, 'offsets.json')
-    todos = {}
-    if os.path.exists(ruta):
-        with open(ruta) as fh:
-            todos = json.load(fh)
-    todos.update(offsets)
+def guardar_offsets(carpeta, offsets, pieza=None):
+    """Escribe los offsets de ESTA pieza en <carpeta>/offsets_<pieza>.json (pieza = nombre del script
+    si no se da). Cada pieza tiene su fichero, así varios scripts pueden correr a la vez sin pisarse;
+    construir_pwad.py y leer_offsets() los juntan todos."""
+    pieza = pieza or os.path.splitext(os.path.basename(sys.argv[0]))[0]
+    ruta = os.path.join(carpeta, f'offsets_{pieza}.json')
     with open(ruta, 'w') as fh:
-        json.dump(dict(sorted(todos.items())), fh, indent=1)
+        json.dump(dict(sorted(offsets.items())), fh, indent=1)
         fh.write('\n')
+
+
+def leer_offsets(carpeta):
+    """Todos los offsets de una carpeta de arte: offsets.json (antiguo) + offsets_*.json."""
+    todos = {}
+    for fn in sorted(os.listdir(carpeta)):
+        if fn == 'offsets.json' or (fn.startswith('offsets_') and fn.endswith('.json')):
+            with open(os.path.join(carpeta, fn)) as fh:
+                todos.update(json.load(fh))
+    return todos
 
 
 def simular_pantalla(carpeta, capas, barra=True, fondo=None):
     """Compone lumps de 'carpeta' (con su offsets.json) en una pantalla 320x200 como el juego
     (con barra de estado el arma sube 16 px y la barra tapa desde y = 168). → Image RGBA."""
     from PIL import ImageDraw
-    with open(os.path.join(carpeta, 'offsets.json')) as fh:
-        off = json.load(fh)
+    off = leer_offsets(carpeta)
     s = Image.new('RGBA', (320, 200), (0, 0, 0, 255))
     d = ImageDraw.Draw(s)
     if fondo is None:

@@ -7,7 +7,7 @@ Uso:
 
 Escribe SHTGA0 (reposo, también al disparar), SHTGB0-D0 (recarga), SHTFA0-B0 (fogonazo doble, a
 pleno brillo) y SHOTA0 (la escopeta tirada en el suelo para recogerla), y añade sus
-desplazamientos a <salida>/offsets.json (conserva las claves de otros lumps).
+desplazamientos a <salida>/offsets_<script>.json (conserva las claves de otros lumps).
 
 En el juego (info.c) los estados van: A reposo; al disparar A (con SHTFA0 y luego SHTFB0 encima),
 y la recarga B, C, D, C, B, A. Aquí la recarga es la de una escopeta de dos cañones de perrillos:

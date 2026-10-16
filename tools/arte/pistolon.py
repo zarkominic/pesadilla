@@ -5,7 +5,7 @@ Uso:
     ~/.venvs/pesadilla/bin/python tools/arte/pistolon.py --salida arte/sprites
 
 Escribe PISGA0.png (reposo), PISGB0.png (disparo), PISGC0.png (vuelta), PISFA0.png (fogonazo) y
-añade sus desplazamientos a <salida>/offsets.json (conserva las claves de otros lumps).
+añade sus desplazamientos a <salida>/offsets_<script>.json (conserva las claves de otros lumps).
 
 Cómo se dibuja (determinista, sin IA ni azar no sembrado), con el motor común arma1p.py:
 - Modelo 3D hecho con primitivas SDF (cápsulas, conos, cajas redondeadas, elipsoides) en
@@ -278,7 +278,7 @@ def main():
         sx, sy = int(round(fx - f.shape[1] / 2)), int(round(fy - f.shape[0] / 2))
         offsets['PISFA0'], g = guardar(f, sx, sy, ruta)
         print(f'PISFA0: {g[2]}x{g[3]} en pantalla ({g[0]}, {g[1]}) offsets {offsets["PISFA0"]}')
-    # offsets.json: conserva las claves de otros lumps
+    # offsets_pistolon.json (cada pieza escribe el suyo)
     guardar_offsets(args.salida, offsets)
 
 
