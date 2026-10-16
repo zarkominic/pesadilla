@@ -38,15 +38,32 @@ gratis (itch.io o web propia).
 
 ```bash
 # Compilar el motor para web (necesita Homebrew: emscripten automake autoconf pkg-config sdl2_mixer sdl2_net)
-cd motor && ./scripts/clean.sh; ./scripts/build.sh
+cd motor && ./scripts/clean.sh; ./scripts/build.sh     # salida: src/pesadilla.{js,wasm}
 
 # Jugar en local: el motor carga src/doom1.wad (nombre fijo) → copiamos ahí el IWAD libre
 cp ../wads/freedoom-0.13.0/freedoom1.wad src/doom1.wad
-cd src && python3 -m http.server 8000      # abrir http://localhost:8000/
+cd src && python3 -m http.server 8765      # abrir http://localhost:8765/
+
+# Pruebas: index.html?args=-warp%201%207 añade parámetros del motor (-warp, -skill, -playdemo…)
 
 # Volver a bajar Freedoom (si falta wads/)
 tools/descargar_freedoom.sh
+
+# Arte propio: PNG → PWAD (ver tools/wad/README.md)
+~/.venvs/pesadilla/bin/python tools/wad/construir_pwad.py --iwad wads/freedoom-0.13.0/freedoom1.wad --arte arte/sprites --salida build/pesadilla.wad
 ```
+
+## Cómo funciona la versión web (motor/src/index.html)
+
+- Partidas y opciones en `/libsdl/pesadilla/`, montado con IDBFS (IndexedDB del navegador); se
+  sincroniza tras guardar. Solo una pestaña a la vez (candado). Si cambian los valores de fábrica de
+  `default.cfg` (p. ej. teclas), subir `VERSION_CFG` en index.html.
+- Controles (seguros en navegador, sin Ctrl): WASD/flechas, ratón gira, clic o Espacio disparan,
+  E o Enter usan/reaparecen, Mayús corre, C o Alt + flechas paso lateral.
+- Música: OPL emulado (snd_musicdevice 3). Heap fijo de 64 MB (caché de sonido 16 MB).
+- Errores fatales (I_Error) se muestran en la página. «Quit Game» vuelve al título.
+- Depuración: `emsymbolizer motor/src/pesadilla.wasm 0xOFFSET` traduce un offset de un error de wasm
+  a fichero:línea (la build lleva -g; para publicar, quitar -g y -gsource-map: wasm 7,7 → 2,2 MB).
 
 ## Ojo: iCloud
 
