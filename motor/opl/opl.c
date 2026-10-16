@@ -500,9 +500,16 @@ void OPL_Delay(uint64_t us)
     // PESADILLA: in the browser there are no threads, the OPL emulator is
     // advanced by the SDL audio callback, which runs on this same (main)
     // thread. SDL_CondWait would block forever; yield with Asyncify instead.
-    while (!delay_data.finished)
+    // Give up after a second: if the browser never runs the audio callback
+    // (e.g. an AudioContext stuck "interrupted"), OPL detection fails and the
+    // game simply starts without music instead of waiting forever.
     {
-        emscripten_sleep(1);
+        Uint32 start = SDL_GetTicks();
+
+        while (!delay_data.finished && SDL_GetTicks() - start < 1000)
+        {
+            emscripten_sleep(1);
+        }
     }
 #else
     while (!delay_data.finished)

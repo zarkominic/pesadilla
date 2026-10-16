@@ -36,7 +36,8 @@
 
 ## Pendiente para publicar
 - Build release: quitar `-g` (configure.ac:29) y `-gsource-map --source-map-base /` (configure.ac:118):
-  wasm 7,7 → 2,2 MB. Servir comprimido (gzip/brotli): descarga total de 37 MB a ~11 MB. El WAD final
+  wasm 7,7 → 2,2 MB (enlazar con `--emit-symbol-map` para seguir pudiendo traducir errores; ese fichero no se
+  publica). Servir comprimido (gzip/brotli): descarga total de 37 MB a ~11 MB. El WAD final
   debería llevar solo lo que usemos (Freedoom1 completo es el 90 % de la descarga).
 - Repo público (GPL) y créditos de Freedoom (CREDITS.txt) junto al juego.
 - Opcional: D_RunFrame duerme con Asyncify ~210 veces/s (≈265 rAF/s); se puede alinear a vsync.
