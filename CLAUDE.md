@@ -60,7 +60,8 @@ tools/descargar_freedoom.sh
   `default.cfg` (p. ej. teclas), subir `VERSION_CFG` en index.html.
 - Controles (seguros en navegador, sin Ctrl): WASD/flechas, ratón gira, clic o Espacio disparan,
   E o Enter usan/reaparecen, Mayús corre, C o Alt + flechas paso lateral.
-- Música: OPL emulado (snd_musicdevice 3). Heap fijo de 64 MB (caché de sonido 16 MB).
+- Música: OPL emulado (snd_musicdevice 3). Memoria: empieza en 64 MB y crece si hace falta; caché de sonido 16 MB
+  (presupuestar sonidos propios: tamaño ×17 al expandirse a 48 kHz).
 - Errores fatales (I_Error) se muestran en la página. «Quit Game» vuelve al título.
 - Depuración: `emsymbolizer motor/src/pesadilla.wasm 0xOFFSET` traduce un offset de un error de wasm
   a fichero:línea (la build lleva -g; para publicar, quitar -g y -gsource-map: wasm 7,7 → 2,2 MB).
