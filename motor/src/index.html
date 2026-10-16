@@ -253,6 +253,12 @@
                         Module.FS.syncfs(false, (err) => {
                             ocupado = false;
                             if (err) console.error("[persist] error guardando en IndexedDB:", err);
+                            // Tras el primer guardado, pedir que el navegador no borre estos datos
+                            // cuando le falte espacio (Firefox lo pregunta; Chrome decide solo).
+                            if (!err && !Module.persistPedido && navigator.storage && navigator.storage.persist) {
+                                Module.persistPedido = true;
+                                navigator.storage.persist().catch(() => {});
+                            }
                             if (otra) {
                                 otra = false;
                                 sync();
