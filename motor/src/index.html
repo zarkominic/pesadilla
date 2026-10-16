@@ -204,7 +204,14 @@
             var VERSION_CFG = "2";
             // Solo para pruebas en local: index.html?args=-warp%201%201 añade parámetros del motor.
             var extra = (new URLSearchParams(location.search).get("args") || "").split(" ").filter(Boolean);
-            var commonArgs = ["-iwad", "doom1.wad", "-window", "-nogui", "-config", PERSIST + "/default.cfg"].concat(extra);
+            // Arte propio: PWADs que se fusionan sobre Freedoom con -merge (como deutex). Para probar
+            // otros: index.html?pwad=a.wad,b.wad (?pwad= vacío = solo Freedoom).
+            var PWADS = [];
+            var pwadParam = new URLSearchParams(location.search).get("pwad");
+            if (pwadParam !== null) PWADS = pwadParam.split(",").filter(Boolean);
+            var commonArgs = ["-iwad", "doom1.wad", "-window", "-nogui", "-config", PERSIST + "/default.cfg"]
+                .concat(PWADS.length ? ["-merge"].concat(PWADS) : [])
+                .concat(extra);
 
             var $ = (id) => document.getElementById(id);
 
@@ -221,6 +228,7 @@
                     var FS = Module.FS;
                     FS.createPreloadedFile("/", "doom1.wad", "doom1.wad", true, true);
                     FS.createPreloadedFile("/", "default.cfg", "default.cfg", true, true); // valores de fábrica
+                    PWADS.forEach((f) => FS.createPreloadedFile("/", f, f, true, true));
                     FS.mkdirTree(PERSIST);
                     FS.mount(FS.filesystems.IDBFS, {}, PERSIST);
                 },
