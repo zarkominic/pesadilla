@@ -33,10 +33,13 @@
   pistolón de chispa** a la pistola (4). `tools/arte/construir.sh` regenera todo; la página carga
   `pesadilla.wad` de serie. Batería de 18 pruebas OK con el arte cargado.
 
-## Siguiente paso
-1. Zarko mira el prototipo (http://localhost:8765/) y decide el estilo: seguir así, retocar (colores,
-   tamaño, más detalle) o cambiar de enfoque.
-2. Con el estilo decidido: resto de enemigos, armas, texturas y sonidos propios (presupuestar sprites).
+## En curso
+- Zarko aprobó el estilo (2026-10-16): seguir igual con el resto de enemigos y armas. Plan y temática de
+  cada pieza en `docs/BESTIARIO.md`. Motor común de criaturas: `tools/arte/sdf.py`.
+- **Lote 1** (agentes en paralelo): Bandolero (SPOS), Meiga + bola de fuego (TROO, BAL1), Toro Negro
+  (SARG), escopeta de caza (SHTG/SHTF/SHOT) y puño (PUNG), con motor común de armas `tools/arte/arma1p.py`.
+  Después: revisión, integrar (construir.sh), probar en el juego y enseñárselo a Zarko ANTES del lote 2.
+- Si la sesión se corta: los scripts a medias quedan en tools/arte/ y los PNG en arte/sprites/.
 
 ## Pendiente para publicar
 - Build release: quitar `-g` (configure.ac:29) y `-gsource-map --source-map-base /` (configure.ac:118):
