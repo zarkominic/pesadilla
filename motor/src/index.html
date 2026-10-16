@@ -204,9 +204,10 @@
             var VERSION_CFG = "2";
             // Solo para pruebas en local: index.html?args=-warp%201%201 añade parámetros del motor.
             var extra = (new URLSearchParams(location.search).get("args") || "").split(" ").filter(Boolean);
-            // Arte propio: PWADs que se fusionan sobre Freedoom con -merge (como deutex). Para probar
-            // otros: index.html?pwad=a.wad,b.wad (?pwad= vacío = solo Freedoom).
-            var PWADS = [];
+            // Arte propio: PWADs que se fusionan sobre Freedoom con -merge (como deutex). pesadilla.wad lo
+            // genera tools/arte/construir.sh. Para probar otros: index.html?pwad=a.wad,b.wad
+            // (?pwad= vacío = solo Freedoom).
+            var PWADS = ["pesadilla.wad"];
             var pwadParam = new URLSearchParams(location.search).get("pwad");
             if (pwadParam !== null) PWADS = pwadParam.split(",").filter(Boolean);
             var commonArgs = ["-iwad", "doom1.wad", "-window", "-nogui", "-config", PERSIST + "/default.cfg"]
