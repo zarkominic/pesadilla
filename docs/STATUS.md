@@ -44,8 +44,10 @@
 - **Lote 2 hecho y dentro del juego** (530 sprites en `pesadilla.wad`, batería 18/18 OK): Ánima (SKUL),
   Coco + escupitajo (HEAD, BAL2), Hombre del Saco + fuego verde (BOSS, BAL7), hoz (SAWG/CSAW), órgano de
   fuego (CHGG/CHGF/MGUN), lanzacohetes de feria + cohete (MISG/MISF/LAUN, MISL). Revisado y corregido.
-- Siguiente: enseñárselo a Zarko y, con su OK, **lote 3**: Gran Cabrón (CYBR), Tarasca (SPID), farol de
-  fuegos fatuos (PLSG/PLSF/PLAS + PLSS/PLSE) y Campana de Velilla (BFGG/BFGF/BFUG + BFS1/BFE1/BFE2).
+- Zarko aprobó el lote 2 (2026-10-17) → **lote 3 en curso** (agentes): Gran Cabrón (CYBR), Tarasca (SPID),
+  farol de fuegos fatuos (PLSG/PLSF/PLAS + PLSS/PLSE) y Campana de Velilla (BFGG/BFGF/BFUG + BFS1/BFE1/BFE2).
+  Con él quedan hechos todos los enemigos y armas de Freedoom 1. Después: regenerar todo (construir.sh),
+  probar y enseñárselo; siguientes frentes posibles: objetos/munición, texturas, sonidos, música, textos.
 
 ## Pendiente para publicar
 - Build release: quitar `-g` (configure.ac:29) y `-gsource-map --source-map-base /` (configure.ac:118):
