@@ -19,3 +19,5 @@ stamp-h1
 clean
 src/doom1.wad
 .githelp
+# PESADILLA: la página del juego sí va al repo
+!src/index.html

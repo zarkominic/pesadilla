@@ -11,3 +11,5 @@ websockets-doom.*
 *.metainfo.xml
 tags
 TAGS
+# PESADILLA: la configuración por defecto que carga index.html sí va al repo
+!default.cfg

@@ -25,3 +25,8 @@ motor/src/websockets-doom.wasm.map
 # Copias duplicadas que crea la sincronización de iCloud
 * 2
 * 2.*
+# Salida de tools/wad (PWAD generado)
+build/
+# Páginas y WADs de prueba en local
+motor/src/_prueba*
+__pycache__/
