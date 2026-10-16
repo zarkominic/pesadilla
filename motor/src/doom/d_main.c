@@ -365,6 +365,21 @@ boolean D_GrabMouseCallback(void)
 }
 
 //
+// D_FocusLostCallback (PESADILLA)
+//
+// Called when the browser tab or window loses focus: open the menu, which
+// pauses a single-player game, so monsters don't attack while away.
+//
+
+static void D_FocusLostCallback(void)
+{
+    if (gamestate == GS_LEVEL && !menuactive && !netgame && !demoplayback)
+    {
+        M_StartControlPanel();
+    }
+}
+
+//
 //  D_RunFrame
 //
 void D_RunFrame()
@@ -437,6 +452,7 @@ void D_DoomLoop(void)
     I_SetWindowTitle(gamedescription);
     I_GraphicsCheckCommandLine();
     I_SetGrabMouseCallback(D_GrabMouseCallback);
+    I_SetFocusLostCallback(D_FocusLostCallback);
     I_InitGraphics();
     EnableLoadingDisk();
 
@@ -1109,7 +1125,9 @@ void D_DoomMain(void)
 {
     int p;
     char file[256];
-    char demolumpname[9];
+    // PESADILLA: static, because G_DeferedPlayDemo keeps a pointer to it and
+    // in the web build D_DoomMain returns while the demo is still playing.
+    static char demolumpname[9];
     int numiwadlumps;
 
     I_AtExit(D_Endoom, false);
@@ -1261,9 +1279,10 @@ void D_DoomMain(void)
 
     // Load configuration files before initialising other subsystems.
     DEH_printf("M_LoadDefaults: Load system defaults.\n");
-    M_SetConfigFilenames("default.cfg", PROGRAM_PREFIX "doom.cfg");
+    M_SetConfigFilenames("default.cfg", PACKAGE_TARNAME ".cfg");
     D_BindVariables();
     M_LoadDefaults();
+    vanilla_savegame_limit = 0; // PESADILLA: aunque un .cfg antiguo diga 1 (mapas de Freedoom > 180 KB)
 
     // Save configuration at exit.
     I_AtExit(M_SaveDefaults, false);
@@ -1683,13 +1702,15 @@ void D_DoomMain(void)
     if (p) {
         singledemo = true; // quit after one demo
         G_DeferedPlayDemo(demolumpname);
-        D_DoomLoop(); // never returns
+        D_DoomLoop(); // returns at once in the web build (emscripten main loop)
+        return;
     }
 
     p = M_CheckParmWithArgs("-timedemo", 1);
     if (p) {
         G_TimeDemo(demolumpname);
-        D_DoomLoop(); // never returns
+        D_DoomLoop(); // returns at once in the web build (emscripten main loop)
+        return;
     }
 
     if (startloadgame >= 0) {

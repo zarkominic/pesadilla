@@ -33,6 +33,7 @@ extern int key_speed_alt;
 
 extern int key_jump;
 extern int key_fullscreen;
+extern int key_use_alt;
  
 extern int key_flyup;
 extern int key_flydown;

@@ -416,6 +416,12 @@ static default_t doom_defaults_list[] = {
     CONFIG_VARIABLE_KEY(key_fullscreen),
 
     //!
+    // PESADILLA: second keyboard key to use switches and doors.
+    //
+
+    CONFIG_VARIABLE_KEY(key_use_alt),
+
+    //!
     // If non-zero, mouse input is enabled.  If zero, mouse input is
     // disabled.
     //
@@ -2145,6 +2151,7 @@ void M_SaveDefaults(void)
 {
     SaveDefaultCollection(&doom_defaults);
     SaveDefaultCollection(&extra_defaults);
+    I_PersistFiles();
 }
 
 //

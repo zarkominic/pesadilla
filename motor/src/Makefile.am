@@ -3,7 +3,7 @@ SUBDIRS = doom
 
 execgamesdir = ${bindir}
 
-execgames_PROGRAMS = @PROGRAM_PREFIX@doom
+execgames_PROGRAMS = pesadilla
 
 AM_CFLAGS = -I$(top_srcdir)/textscreen            \
             -I$(top_srcdir)/opl                   \
@@ -105,12 +105,12 @@ EXTRA_LIBS =                                               \
                @SDLNET_LIBS@
 
 if HAVE_WINDRES
-@PROGRAM_PREFIX@doom_SOURCES=$(SOURCE_FILES_WITH_DEH) resource.rc
+pesadilla_SOURCES=$(SOURCE_FILES_WITH_DEH) resource.rc
 else
-@PROGRAM_PREFIX@doom_SOURCES=$(SOURCE_FILES_WITH_DEH)
+pesadilla_SOURCES=$(SOURCE_FILES_WITH_DEH)
 endif
 
-@PROGRAM_PREFIX@doom_LDADD = doom/libdoom.a $(EXTRA_LIBS)
+pesadilla_LDADD = doom/libdoom.a $(EXTRA_LIBS)
 
 # Make "make" aware of convenience libraries in subdirectories
 

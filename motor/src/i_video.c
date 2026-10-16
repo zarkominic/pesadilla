@@ -184,6 +184,9 @@ static boolean noblit;
 
 static grabmouse_callback_t grabmouse_callback = NULL;
 
+// PESADILLA: called when the window (browser tab) loses focus.
+static focuslost_callback_t focuslost_callback = NULL;
+
 // Does the window currently have focus?
 
 static boolean window_focused = true;
@@ -245,6 +248,11 @@ static boolean MouseShouldBeGrabbed()
 void I_SetGrabMouseCallback(grabmouse_callback_t func)
 {
     grabmouse_callback = func;
+}
+
+void I_SetFocusLostCallback(focuslost_callback_t func)
+{
+    focuslost_callback = func;
 }
 
 // Set the variable controlling FPS dots.
@@ -351,6 +359,10 @@ static void HandleWindowEvent(SDL_WindowEvent *event)
 
         case SDL_WINDOWEVENT_FOCUS_LOST:
             window_focused = false;
+            if (focuslost_callback != NULL)
+            {
+                focuslost_callback();
+            }
             break;
 
         // We want to save the user's preferred monitor to use for running the
@@ -884,7 +896,9 @@ void I_InitWindowTitle(void)
 {
     char *buf;
 
-    buf = M_StringJoin(window_title, " - ", PACKAGE_STRING, NULL);
+    // PESADILLA: the tab title is just the game's name (window_title is the
+    // IWAD description, e.g. "Freedoom: Phase 1").
+    buf = M_StringDuplicate(PACKAGE_NAME);
     SDL_SetWindowTitle(screen, buf);
     free(buf);
 }

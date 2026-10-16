@@ -32,6 +32,7 @@
 #define SCREENHEIGHT_4_3 240
 
 typedef boolean (*grabmouse_callback_t)(void);
+typedef void (*focuslost_callback_t)(void);
 
 // Called by D_DoomMain,
 // determines the hardware configuration
@@ -57,6 +58,7 @@ void I_SetWindowTitle(const char *title);
 
 void I_CheckIsScreensaver(void);
 void I_SetGrabMouseCallback(grabmouse_callback_t func);
+void I_SetFocusLostCallback(focuslost_callback_t func);
 
 void I_DisplayFPSDots(boolean dots_on);
 void I_BindVideoVariables(void);

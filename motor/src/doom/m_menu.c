@@ -35,6 +35,7 @@
 #include "i_timer.h"
 #include "i_video.h"
 #include "m_misc.h"
+#include "m_config.h"
 #include "v_video.h"
 #include "w_wad.h"
 #include "z_zone.h"
@@ -1108,7 +1109,14 @@ void M_QuitResponse(int key)
 	    S_StartSound(NULL,quitsounds[(gametic>>2)&7]);
 	I_WaitVBL(105);
     }
+#ifdef __EMSCRIPTEN__
+    // PESADILLA: in a web page there is nowhere to quit to (I_Quit left a
+    // dead black canvas), so go back to the title screen like End Game.
+    M_ClearMenus ();
+    D_StartTitle ();
+#else
     I_Quit ();
+#endif
 }
 
 
@@ -1647,6 +1655,7 @@ boolean M_Responder (event_t* ev)
 		return false;
 	    M_SizeDisplay(0);
 	    S_StartSound(NULL,sfx_stnmov);
+	    M_SaveDefaults();
 	    return true;
 	}
         else if (key == key_menu_incscreen) // Screen size up
@@ -1655,6 +1664,7 @@ boolean M_Responder (event_t* ev)
 		return false;
 	    M_SizeDisplay(1);
 	    S_StartSound(NULL,sfx_stnmov);
+	    M_SaveDefaults();
 	    return true;
 	}
         else if (key == key_menu_help)     // Help key
@@ -1696,6 +1706,7 @@ boolean M_Responder (event_t* ev)
         {
 	    M_ChangeDetail(0);
 	    S_StartSound(NULL,sfx_swtchn);
+	    M_SaveDefaults();
 	    return true;
         }
         else if (key == key_menu_qsave)    // Quicksave
@@ -1714,6 +1725,7 @@ boolean M_Responder (event_t* ev)
         {
 	    M_ChangeMessages(0);
 	    S_StartSound(NULL,sfx_swtchn);
+	    M_SaveDefaults();
 	    return true;
         }
         else if (key == key_menu_qload)    // Quickload
@@ -1735,6 +1747,7 @@ boolean M_Responder (event_t* ev)
 		usegamma = 0;
 	    players[consoleplayer].message = DEH_String(gammamsg[usegamma]);
             I_SetPalette (W_CacheLumpName (DEH_String("PLAYPAL"),PU_CACHE));
+	    M_SaveDefaults();
 	    return true;
 	}
     }
@@ -2027,6 +2040,7 @@ void M_Drawer (void)
 void M_ClearMenus (void)
 {
     menuactive = 0;
+    M_SaveDefaults();   // PESADILLA: options changed in the menu persist at once
     // if (!netgame && usergame && paused)
     //       sendpause = true;
 }

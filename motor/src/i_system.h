@@ -66,6 +66,10 @@ boolean I_GetMemoryValue(unsigned int offset, void *value, int size);
 
 void I_AtExit(atexit_func_t func, boolean run_if_error);
 
+// PESADILLA: copy the persistent directory (IDBFS) to IndexedDB so saves and
+// config survive a page reload. Asynchronous; safe to call often.
+void I_PersistFiles(void);
+
 // Add all system-specific config file variable bindings.
 
 void I_BindVariables(void);

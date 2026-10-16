@@ -218,6 +218,20 @@ void I_BindVariables(void)
 */
 
 //
+// I_PersistFiles (PESADILLA)
+// Flush the IDBFS mount (set up in index.html) to IndexedDB. FS.syncfs is
+// asynchronous: if one is already running, queue exactly one more.
+//
+
+void I_PersistFiles(void)
+{
+    EM_ASM({
+        if (typeof Module.persistSync !== 'function') return;  // no IDBFS mount
+        Module.persistSync();
+    });
+}
+
+//
 // I_Quit
 //
 
@@ -306,7 +320,16 @@ void I_Error(const char *error, ...)
 
     SDL_Quit();
 
-    exit(-1);
+    // PESADILLA: en el navegador no hay ventana de error (-nogui) y exit() no para el bucle
+    // principal de Emscripten: el siguiente frame repetía el error hasta desbordar la pila.
+    // Mostrar el mensaje al jugador y parar de verdad.
+    EM_ASM({
+        var msg = UTF8ToString($0);
+        if (typeof Module.onFatalError === 'function') Module.onFatalError(msg);
+        else alert('PESADILLA: error\n\n' + msg);
+    }, msgbuf);
+    emscripten_cancel_main_loop();
+    emscripten_force_exit(-1);
 }
 
 //

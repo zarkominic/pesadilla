@@ -40,6 +40,7 @@ int key_speed = KEY_RSHIFT;
 int key_strafe_alt = KEY_RALT;
 int key_speed_alt = KEY_RSHIFT;
 int key_fullscreen = 'f';
+int key_use_alt = 'e';        // PESADILLA: second "use" key (Space and E)
 
 //
 // Heretic keyboard controls
@@ -234,6 +235,7 @@ void M_BindBaseControls(void)
     M_BindIntVariable("key_strafe_alt", &key_strafe_alt);
     M_BindIntVariable("key_speed_alt", &key_speed_alt);
     M_BindIntVariable("key_fullscreen", &key_fullscreen);
+    M_BindIntVariable("key_use_alt", &key_use_alt);
 
     M_BindIntVariable("mouseb_fire", &mousebfire);
     M_BindIntVariable("mouseb_strafe", &mousebstrafe);

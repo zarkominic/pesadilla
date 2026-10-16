@@ -206,7 +206,7 @@ static char savedescription[32];
 mobj_t *bodyque[BODYQUESIZE];
 int bodyqueslot;
 
-int vanilla_savegame_limit = 1;
+int vanilla_savegame_limit = 0; // PESADILLA: los mapas de Freedoom superan el límite vanilla (180 KB)
 int vanilla_demo_limit = 1;
 
 int G_CmdChecksum(ticcmd_t *cmd)
@@ -370,23 +370,17 @@ void G_BuildTiccmd(ticcmd_t *cmd, int maketic)
         side += sidemove[speed];
     }
 
-    // fullscreen
-    if (gamekeydown[key_fullscreen]) {
-        EmscriptenFullscreenChangeEvent fsce;
-        emscripten_get_fullscreen_status(&fsce);
-        if (!fsce.isFullscreen) {
-            printf("doom: 11, entering fullscreen");
-            emscripten_request_fullscreen("#canvas", 1);
-            emscripten_sleep(1000);
-        }
-    }
+    // PESADILLA: the fullscreen key used to call emscripten_request_fullscreen()
+    // and emscripten_sleep(1000) from here, freezing the game for a second on
+    // every tic the key was held (and clashing with the IDKFA cheat). Fullscreen
+    // is now a button on the web page (index.html).
 
     // buttons
     cmd->chatchar = HU_dequeueChatChar();
 
     if (gamekeydown[key_fire] || mousebuttons[mousebfire] || joybuttons[joybfire]) cmd->buttons |= BT_ATTACK;
 
-    if (gamekeydown[key_use] || joybuttons[joybuse] || mousebuttons[mousebuse]) {
+    if (gamekeydown[key_use] || gamekeydown[key_use_alt] || joybuttons[joybuse] || mousebuttons[mousebuse]) {
         cmd->buttons |= BT_USE;
         // clear double clicks if hit use button
         dclicks = 0;
@@ -1482,6 +1476,7 @@ void G_DoSaveGame(void)
 
     remove(savegame_file);
     rename(temp_savegame_file, savegame_file);
+    I_PersistFiles();
 
     gameaction = ga_nothing;
     M_StringCopy(savedescription, "", sizeof(savedescription));

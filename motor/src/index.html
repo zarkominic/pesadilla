@@ -1,106 +1,347 @@
 <!DOCTYPE html>
-<html lang="en-us">
+<html lang="es">
     <head>
-        <title>Websockets Doom</title>
-        <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>PESADILLA</title>
+        <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23120808'/%3E%3Ctext x='16' y='25' font-family='Georgia,serif' font-size='24' font-weight='bold' text-anchor='middle' fill='%23c41818'%3EP%3C/text%3E%3C/svg%3E" />
         <style>
-            @font-face {
-                font-family: "VT323";
-                font-style: normal;
-                font-weight: 400;
-                src: url(https://fonts.gstatic.com/s/vt323/v12/pxiKyp0ihIEF2isfFJXUdVNF.woff2) format("woff2");
-                unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+            :root {
+                --fondo: #0b0909;
+                --texto: #d8cfc4;
+                --tenue: #8a7f75;
+                --rojo: #c41818;
+                --barra: 40px;
             }
 
             * {
                 box-sizing: border-box;
             }
 
-            html {
-                font-family: "VT323", monospace;
-                font-size: 12px;
+            html,
+            body {
+                margin: 0;
+                height: 100%;
+                background: var(--fondo);
+                color: var(--texto);
+                font: 15px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
             }
 
             body {
-                background-color: #111;
-                margin: 0;
-                padding: 2ch;
-                /* vietnamese */
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
             }
 
-            #container {
-                max-width: 930px;
-                margin: auto;
+            header {
+                height: var(--barra);
+                flex: none;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 0 16px;
             }
 
-            .frame {
-                padding-right: 0;
-                margin-left: auto;
-                margin-right: auto;
+            header h1 {
+                margin: 0 auto 0 0;
+                font: bold 18px/1 Georgia, serif;
+                letter-spacing: 0.2em;
+                color: var(--rojo);
+            }
+
+            button {
+                font: inherit;
+                font-size: 13px;
+                color: var(--texto);
+                background: #1c1616;
+                border: 1px solid #3a302c;
+                border-radius: 4px;
+                padding: 4px 10px;
+                cursor: pointer;
+            }
+
+            button:hover {
+                background: #2a2020;
+            }
+
+            /* Zona del juego: el canvas ocupa lo máximo posible manteniendo 4:3 (320x200 de Doom en
+               píxeles no cuadrados = 4:3 en pantalla). Sin scroll en ningún tamaño de ventana. */
+            #juego {
+                flex: 1;
+                min-height: 0;
+                display: grid;
+                place-items: center;
+                position: relative;
+                background: #000;
+            }
+
+            #canvas {
                 display: block;
+                width: min(100vw, calc((100vh - var(--barra)) * 4 / 3));
+                height: auto;
+                aspect-ratio: 4 / 3;
+                background: #000;
+                image-rendering: pixelated;
             }
 
-            /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
-            canvas.frame {
-                background-color: black;
-                width: 800px;
-                height: 600px;
+            #juego:fullscreen #canvas {
+                width: min(100vw, calc(100vh * 4 / 3));
+            }
+
+            #canvas:focus {
+                outline: none;
+            }
+
+            .aviso {
+                position: absolute;
+                inset: 0;
+                display: grid;
+                place-items: center;
+                padding: 24px;
+                text-align: center;
+                background: rgba(0, 0, 0, 0.85);
+            }
+
+            .aviso[hidden] {
+                display: none;
+            }
+
+            .aviso p {
+                max-width: 32em;
+                margin: 0;
+            }
+
+            #error p {
+                color: #ff6b5e;
+                white-space: pre-wrap;
+            }
+
+            #controles {
+                position: absolute;
+                top: 8px;
+                right: 16px;
+                z-index: 2;
+                max-width: calc(100vw - 32px);
+                padding: 12px 16px;
+                background: rgba(18, 12, 12, 0.95);
+                border: 1px solid #3a302c;
+                border-radius: 6px;
+            }
+
+            #controles[hidden] {
+                display: none;
+            }
+
+            #controles table {
+                border-collapse: collapse;
+            }
+
+            #controles td {
+                padding: 2px 8px;
+                vertical-align: top;
+            }
+
+            #controles td:first-child {
+                color: var(--tenue);
+                white-space: nowrap;
+            }
+
+            #creditos {
+                margin-top: 10px;
+                font-size: 12px;
+                color: var(--tenue);
+            }
+
+            #creditos a {
+                color: var(--tenue);
             }
         </style>
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
     </head>
     <body>
-        <div id="container" class="noselect">
-            <canvas class="frame" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+        <header>
+            <h1>PESADILLA</h1>
+            <button id="btn-controles" type="button" aria-expanded="false">Controles</button>
+            <button id="btn-pantalla" type="button">Pantalla completa</button>
+        </header>
+        <div id="juego">
+            <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+            <div id="cargando" class="aviso"><p>Cargando…</p></div>
+            <div id="error" class="aviso" hidden><p></p></div>
+            <div id="otra-pestana" class="aviso" hidden>
+                <p>PESADILLA ya está abierto en otra pestaña. Ciérrala y recarga esta.</p>
+            </div>
+            <div id="movil" class="aviso" hidden>
+                <p>PESADILLA se juega con teclado y ratón. Ábrelo en un ordenador.<br /><br /><button type="button" id="btn-movil">Probar igualmente</button></p>
+            </div>
+            <div id="controles" hidden>
+                <table>
+                    <tr><td>Moverse</td><td>W A S D o flechas</td></tr>
+                    <tr><td>Girar</td><td>ratón o ← →</td></tr>
+                    <tr><td>Disparar</td><td>clic izquierdo o Ctrl</td></tr>
+                    <tr><td>Usar / abrir</td><td>Espacio o E (también para reaparecer)</td></tr>
+                    <tr><td>Correr</td><td>Mayúsculas</td></tr>
+                    <tr><td>Paso lateral</td><td>A D, o Alt + ← →</td></tr>
+                    <tr><td>Armas</td><td>1 – 7</td></tr>
+                    <tr><td>Mapa</td><td>Tab</td></tr>
+                    <tr><td>Menú y pausa</td><td>Esc (también suelta el ratón)</td></tr>
+                    <tr><td>Guardar / cargar</td><td>F2 / F3 (en Mac: fn + F2)</td></tr>
+                </table>
+                <p id="creditos">
+                    Motor: <a href="https://www.chocolate-doom.org/" target="_blank" rel="noopener">Chocolate Doom</a> y
+                    <a href="https://github.com/cloudflare/doom-wasm" target="_blank" rel="noopener">doom-wasm</a> (GPL-2.0).
+                    Niveles: <a href="https://freedoom.github.io/" target="_blank" rel="noopener">Freedoom</a> (BSD).
+                    <a href="https://github.com/zarkominic/pesadilla" target="_blank" rel="noopener">Código fuente</a>.
+                </p>
+            </div>
         </div>
         <script>
-            var commonArgs = ["-iwad", "doom1.wad", "-window", "-nogui", "-nomusic", "-config", "default.cfg", "-servername", "doomflare"];
+            // Partidas y configuración persistentes: el motor guarda todo en SDL_GetPrefPath("", "pesadilla")
+            // = /libsdl/pesadilla/ (default.cfg, pesadilla.cfg y savegames/). Ese directorio se monta con
+            // IDBFS, que lo copia a IndexedDB del navegador.
+            var PERSIST = "/libsdl/pesadilla";
+            // Sube este número si cambian los valores de fábrica de default.cfg (p. ej. las teclas):
+            // la próxima vez se sustituye la copia guardada del jugador.
+            var VERSION_CFG = "1";
+            // Solo para pruebas en local: index.html?args=-warp%201%201 añade parámetros del motor.
+            var extra = (new URLSearchParams(location.search).get("args") || "").split(" ").filter(Boolean);
+            var commonArgs = ["-iwad", "doom1.wad", "-window", "-nogui", "-nomusic", "-config", PERSIST + "/default.cfg"].concat(extra);
+
+            var $ = (id) => document.getElementById(id);
+
+            function aviso(id, texto) {
+                $("cargando").hidden = true;
+                if (texto) $(id).querySelector("p").textContent = texto;
+                $(id).hidden = false;
+            }
 
             var Module = {
-                onRuntimeInitialized: () => {
-                    callMain(commonArgs);
-                },
                 noInitialRun: true,
+                canvas: $("canvas"),
                 preRun: () => {
-                    Module.FS.createPreloadedFile("", "doom1.wad", "doom1.wad", true, true);
-                    Module.FS.createPreloadedFile("", "default.cfg", "default.cfg", true, true);
+                    var FS = Module.FS;
+                    FS.createPreloadedFile("/", "doom1.wad", "doom1.wad", true, true);
+                    FS.createPreloadedFile("/", "default.cfg", "default.cfg", true, true); // valores de fábrica
+                    FS.mkdirTree(PERSIST);
+                    FS.mount(FS.filesystems.IDBFS, {}, PERSIST);
+                },
+                onRuntimeInitialized: () => {
+                    // Solo una pestaña puede usar las partidas: si hubiera dos, la sincronización de una
+                    // borraría de IndexedDB lo que guardó la otra.
+                    if (!navigator.locks) return arrancar();
+                    navigator.locks.request("pesadilla-partidas", { ifAvailable: true }, (lock) => {
+                        if (!lock) {
+                            aviso("otra-pestana");
+                            return;
+                        }
+                        arrancar();
+                        return new Promise(() => {}); // el candado dura lo que la pestaña
+                    });
+                },
+                persistOK: false,
+                // Llamado desde C (I_PersistFiles) tras guardar partida o configuración. FS.syncfs es
+                // asíncrono: si ya hay uno en marcha, se encola uno más.
+                persistSync: (function () {
+                    var ocupado = false,
+                        otra = false;
+                    return function sync() {
+                        if (!Module.persistOK) return;
+                        if (ocupado) {
+                            otra = true;
+                            return;
+                        }
+                        ocupado = true;
+                        Module.FS.syncfs(false, (err) => {
+                            ocupado = false;
+                            if (err) console.error("[persist] error guardando en IndexedDB:", err);
+                            if (otra) {
+                                otra = false;
+                                sync();
+                            }
+                        });
+                    };
+                })(),
+                // Llamado desde C (I_Error): enseñar el error en vez de dejar la pantalla negra.
+                onFatalError: function (msg) {
+                    console.error("[fatal] " + msg);
+                    aviso("error", "Error del juego:\n" + msg + "\n\nRecarga la página para seguir (tus partidas guardadas se conservan).");
+                },
+                print: function (text) {
+                    console.log(text);
                 },
                 printErr: function (text) {
                     if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(" ");
                     console.error(text);
                 },
-                canvas: (function () {
-                    var canvas = document.getElementById("canvas");
-                    canvas.addEventListener(
-                        "webglcontextlost",
-                        function (e) {
-                            alert("WebGL context lost. You will need to reload the page.");
-                            e.preventDefault();
-                        },
-                        false
-                    );
-                    return canvas;
-                })(),
-                print: function (text) {
-                    console.log(text);
-                },
                 setStatus: function (text) {
-                    console.log(text);
+                    if (text) console.log(text);
                 },
                 totalDependencies: 0,
                 monitorRunDependencies: function (left) {
                     this.totalDependencies = Math.max(this.totalDependencies, left);
-                    Module.setStatus(left ? "Preparing... (" + (this.totalDependencies - left) + "/" + this.totalDependencies + ")" : "All downloads complete.");
+                    $("cargando").querySelector("p").textContent = left
+                        ? "Cargando… (" + (this.totalDependencies - left) + "/" + this.totalDependencies + ")"
+                        : "Cargando…";
                 },
             };
 
-            window.onerror = function (event) {
-                Module.setStatus("Exception thrown, see JavaScript console");
+            function arrancar() {
+                var FS = Module.FS;
+                Module.persistOK = true;
+                // Recuperar de IndexedDB partidas y configuración ANTES de arrancar el juego.
+                FS.syncfs(true, (err) => {
+                    if (err) console.error("[persist] no se pudo leer IndexedDB:", err);
+                    var marca = PERSIST + "/.version-cfg";
+                    var version = FS.analyzePath(marca).exists ? FS.readFile(marca, { encoding: "utf8" }) : "";
+                    if (!FS.analyzePath(PERSIST + "/default.cfg").exists || version !== VERSION_CFG) {
+                        FS.writeFile(PERSIST + "/default.cfg", FS.readFile("/default.cfg"));
+                        FS.writeFile(marca, VERSION_CFG);
+                    }
+                    $("cargando").hidden = true;
+                    callMain(commonArgs);
+                    $("canvas").focus();
+                });
+            }
+
+            window.onerror = function () {
                 Module.setStatus = function (text) {
-                    if (text) Module.printErr("[post-exception status] " + text);
+                    if (text) console.error("[tras excepción] " + text);
                 };
             };
+
+            // Sincronizar también al ocultar o cerrar la pestaña.
+            document.addEventListener("visibilitychange", () => {
+                if (document.hidden && Module.FS) Module.persistSync();
+            });
+
+            // Que AvPág, RePág, Inicio y Fin no desplacen la página mientras se juega.
+            window.addEventListener(
+                "keydown",
+                (e) => {
+                    if (["PageUp", "PageDown", "Home", "End"].includes(e.key) && e.target === $("canvas")) e.preventDefault();
+                },
+                { capture: true }
+            );
+
+            $("btn-pantalla").addEventListener("click", () => {
+                var zona = $("juego");
+                if (document.fullscreenElement) document.exitFullscreen();
+                else if (zona.requestFullscreen) zona.requestFullscreen().catch((e) => console.warn("Pantalla completa no disponible:", e));
+                $("canvas").focus();
+            });
+
+            $("btn-controles").addEventListener("click", () => {
+                var panel = $("controles");
+                panel.hidden = !panel.hidden;
+                $("btn-controles").setAttribute("aria-expanded", String(!panel.hidden));
+                $("canvas").focus();
+            });
+
+            // Pantallas táctiles sin ratón: avisar de que hace falta teclado y ratón.
+            if (window.matchMedia("(pointer: coarse)").matches && !window.matchMedia("(any-pointer: fine)").matches) {
+                $("movil").hidden = false;
+                $("btn-movil").addEventListener("click", () => ($("movil").hidden = true));
+            }
         </script>
-        <script type="text/javascript" src="websockets-doom.js"></script>
+        <script src="pesadilla.js"></script>
     </body>
 </html>
