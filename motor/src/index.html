@@ -2,16 +2,27 @@
 <html lang="es">
     <head>
         <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
         <title>PESADILLA</title>
+        <meta name="claude:viewport-fit-sides" content="cover" />
         <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23120808'/%3E%3Ctext x='16' y='25' font-family='Georgia,serif' font-size='24' font-weight='bold' text-anchor='middle' fill='%23c41818'%3EP%3C/text%3E%3C/svg%3E" />
         <style>
+            /* Un solo tema, oscuro a propósito (pantalla de juego): cabecera fina arriba y el canvas 4:3
+               tan grande como quepa debajo, sin scroll en ningún tamaño. */
             :root {
                 --fondo: #0b0909;
                 --texto: #d8cfc4;
                 --tenue: #8a7f75;
                 --rojo: #c41818;
+                --boton: #1c1616;
+                --boton-encima: #2a2020;
+                --borde: #3a302c;
+                --panel: rgba(18, 12, 12, 0.95);
+                --velo: rgba(0, 0, 0, 0.85);
+                --error: #ff6b5e;
+                --negro: #000;
                 --barra: 40px;
+                color-scheme: dark;
             }
 
             * {
@@ -31,6 +42,8 @@
                 display: flex;
                 flex-direction: column;
                 overflow: hidden;
+                padding-left: max(16px, env(safe-area-inset-left, 0px));
+                padding-right: max(16px, env(safe-area-inset-right, 0px));
             }
 
             header {
@@ -39,7 +52,6 @@
                 display: flex;
                 align-items: center;
                 gap: 12px;
-                padding: 0 16px;
             }
 
             header h1 {
@@ -53,15 +65,20 @@
                 font: inherit;
                 font-size: 13px;
                 color: var(--texto);
-                background: #1c1616;
-                border: 1px solid #3a302c;
+                background: var(--boton);
+                border: 1px solid var(--borde);
                 border-radius: 4px;
                 padding: 4px 10px;
                 cursor: pointer;
             }
 
             button:hover {
-                background: #2a2020;
+                background: var(--boton-encima);
+            }
+
+            button:focus-visible {
+                outline: 2px solid var(--rojo);
+                outline-offset: 1px;
             }
 
             /* Zona del juego: el canvas ocupa lo máximo posible manteniendo 4:3 (320x200 de Doom en
@@ -72,20 +89,19 @@
                 display: grid;
                 place-items: center;
                 position: relative;
-                background: #000;
+                background: var(--negro);
+                container-type: size;
             }
 
+            /* El canvas cabe entero en #juego (unidades de contenedor), también a pantalla completa. */
             #canvas {
                 display: block;
-                width: min(100vw, calc((100vh - var(--barra)) * 4 / 3));
+                width: min(100cqw, 100cqh * 4 / 3);
                 height: auto;
+                max-width: 100%;
                 aspect-ratio: 4 / 3;
-                background: #000;
+                background: var(--negro);
                 image-rendering: pixelated;
-            }
-
-            #juego:fullscreen #canvas {
-                width: min(100vw, calc(100vh * 4 / 3));
             }
 
             #canvas:focus {
@@ -99,7 +115,7 @@
                 place-items: center;
                 padding: 24px;
                 text-align: center;
-                background: rgba(0, 0, 0, 0.85);
+                background: var(--velo);
             }
 
             .aviso[hidden] {
@@ -112,19 +128,21 @@
             }
 
             #error p {
-                color: #ff6b5e;
+                color: var(--error);
                 white-space: pre-wrap;
             }
 
             #controles {
                 position: absolute;
                 top: 8px;
-                right: 16px;
+                right: 8px;
                 z-index: 2;
-                max-width: calc(100vw - 32px);
+                max-width: calc(100% - 16px);
+                max-height: calc(100% - 16px);
+                overflow: auto;
                 padding: 12px 16px;
-                background: rgba(18, 12, 12, 0.95);
-                border: 1px solid #3a302c;
+                background: var(--panel);
+                border: 1px solid var(--borde);
                 border-radius: 6px;
             }
 
@@ -208,6 +226,10 @@
             // genera tools/arte/construir.sh. Para probar otros: index.html?pwad=a.wad,b.wad
             // (?pwad= vacío = solo Freedoom).
             var PWADS = ["pesadilla.wad"];
+            // Ficheros que se sirven empaquetados: nombre → URL. «.gz» = comprimido (Freedoom pasa de 28 a ~10 MB);
+            // «.b64.txt» = además en base64, para servidores que solo sirven texto (los Artifacts de claude.ai).
+            // Lo rellena tools/web/empaquetar.sh en las versiones publicadas; en local, ninguno.
+            var EMPAQUETADOS = {};
             var pwadParam = new URLSearchParams(location.search).get("pwad");
             if (pwadParam !== null) PWADS = pwadParam.split(",").filter(Boolean);
             var commonArgs = ["-iwad", "doom1.wad", "-window", "-nogui", "-config", PERSIST + "/default.cfg"]
@@ -227,9 +249,11 @@
                 canvas: $("canvas"),
                 preRun: () => {
                     var FS = Module.FS;
-                    FS.createPreloadedFile("/", "doom1.wad", "doom1.wad", true, true);
-                    FS.createPreloadedFile("/", "default.cfg", "default.cfg", true, true); // valores de fábrica
-                    PWADS.forEach((f) => FS.createPreloadedFile("/", f, f, true, true));
+                    // doom1.wad (Freedoom), default.cfg (valores de fábrica) y el arte propio.
+                    ["doom1.wad", "default.cfg"].concat(PWADS).forEach((f) => {
+                        if (EMPAQUETADOS[f]) cargarEmpaquetado(f, EMPAQUETADOS[f]);
+                        else FS.createPreloadedFile("/", f, f, true, true);
+                    });
                     FS.mkdirTree(PERSIST);
                     FS.mount(FS.filesystems.IDBFS, {}, PERSIST);
                 },
@@ -298,6 +322,34 @@
                         : "Cargando…";
                 },
             };
+
+            // Descarga el fichero empaquetado, lo decodifica/descomprime en el navegador y lo deja en / antes
+            // de arrancar.
+            function cargarEmpaquetado(f, url) {
+                addRunDependency("emp:" + f);
+                fetch(url)
+                    .then((r) => {
+                        if (!r.ok) throw new Error(url + ": HTTP " + r.status);
+                        if (!url.endsWith(".b64.txt")) return r.arrayBuffer().then((buf) => new Uint8Array(buf));
+                        return r.text().then((t) => {
+                            var bin = atob(t.replace(/\s+/g, ""));
+                            var b = new Uint8Array(bin.length);
+                            for (var i = 0; i < bin.length; i++) b[i] = bin.charCodeAt(i);
+                            return b;
+                        });
+                    })
+                    .then((b) => {
+                        // Si el servidor ya lo entregó descomprimido (Content-Encoding: gzip), no empieza por 1f 8b.
+                        if (b[0] !== 0x1f || b[1] !== 0x8b) return b;
+                        var flujo = new Blob([b]).stream().pipeThrough(new DecompressionStream("gzip"));
+                        return new Response(flujo).arrayBuffer().then((x) => new Uint8Array(x));
+                    })
+                    .then((datos) => {
+                        Module.FS.writeFile("/" + f, datos);
+                        removeRunDependency("emp:" + f);
+                    })
+                    .catch((e) => Module.onFatalError("No se pudo cargar " + f + ": " + e.message));
+            }
 
             function arrancar() {
                 var FS = Module.FS;
