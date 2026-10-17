@@ -48,8 +48,14 @@
   fatuos (PLSG/PLSF/PLAS + PLSS/PLSE) y Campana de Velilla (BFGG/BFGF/BFUG + BFS1/BFE1/BFE2).
   → **Todos los enemigos y armas de Freedoom 1 tienen arte propio**: 713 sprites, 17 scripts en tools/arte.
   `tools/arte/construir.sh` lo regenera todo (≈14 min, en paralelo) idéntico byte a byte. Batería 18/18 OK.
-- Siguiente (a decidir con Zarko): objetos y munición (botiquines, armaduras, llaves, cajas), decoración,
-  texturas y suelos, cara del HUD y pantallas (título, intermedio), sonidos, música propia y textos en español.
+- **Objetos hechos** (2026-10-17): salud, armadura, poderes, llaves, munición y barriles (62 sprites;
+  ver BESTIARIO). Total: 775 sprites en `pesadilla.wad`. Batería 18/18 OK.
+- **Versión web privada** (para probar desde cualquier navegador): https://claude.ai/artifact/49vRaGHpGDrZzWyRNQC9Bq
+  (Artifact privado de claude.ai, solo Zarko). Se genera con `tools/web/empaquetar.sh` (build sin
+  depuración, 15 MB) y se publica `build/web/artefacto.html` con sus ficheros (ver el script). Pendiente:
+  que Zarko confirme que arranca dentro de claude.ai (yo no puedo iniciar sesión en el navegador).
+- Siguiente (a decidir con Zarko): decoración, texturas y suelos, cara de la barra de estado e iconos
+  (STKEYS), pantallas (título, intermedio), sonidos, música y textos en español.
 
 ## Pendiente para publicar
 - Build release: quitar `-g` (configure.ac:29) y `-gsource-map --source-map-base /` (configure.ac:118):

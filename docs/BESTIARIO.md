@@ -36,6 +36,19 @@ Nada de símbolos religiosos explícitos ni parecidos con el KKK (capirotes oscu
 Pendiente de texto: los mensajes al recoger armas siguen siendo los de Freedoom («Got the pump-action
 shotgun!», «You got the chainsaw!»…): cambiarlos cuando se traduzcan los textos.
 
+## Objetos (2026-10-17)
+
+| Grupo | Sprites | Nuestro objeto |
+|---|---|---|
+| Salud | STIM, MEDI, BON1, SOUL | tarro de ungüento, maletín de médico (hoja verde, sin cruz), frasquito de elixir, bola de cristal de la meiga |
+| Armadura | ARM1, ARM2, BON2 | coleto de cuero verde, peto de hierro de tercio azul, herradura |
+| Poderes | PINV, PSTR, PINS, SUIT, PMAP, PVIS | amuleto de azabache, bota de vino (berserk), capa de niebla, chubasquero de marinero gallego, plano del pueblo, candil |
+| Llaves | BKEY/RKEY/YKEY, BSKU/RSKU/YSKU | llaves de hierro con lazo de color; llaves de hueso con calavera y gemas de color |
+| Munición | CLIP, AMMO, SHEL, SBOX, ROCK, BROK, CELL, CELP, BPAK | bolsita y caja de balas de plomo, cartuchos y caja, cohete y caja de cohetes de feria, tarro y damajuana de fuegos fatuos, zurrón |
+| Barril | BAR1, BEXP | barril de pólvora con mecha y calavera de cal; estalla en duelas |
+
+Scripts: `tools/arte/salud.py`, `poderes.py`, `municion.py`. Pendiente: iconos de llaves de la barra de estado (STKEYS).
+
 ## Cómo se hace cada pieza
 
 - Criaturas: `tools/arte/sdf.py` (motor común: primitivas SDF, render, paleta, contorno, `cli`).
