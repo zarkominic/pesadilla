@@ -55,8 +55,15 @@
   depuración, 15 MB) y se publica `build/web/artefacto.html` con sus ficheros (ver el script).
   **Zarko confirmó (2026-10-17) que carga y se juega bien.** Para actualizarla: empaquetar.sh y publicar
   el mismo `build/web/artefacto.html` (mismo enlace).
-- Siguiente (a decidir con Zarko): decoración, texturas y suelos, cara de la barra de estado e iconos
-  (STKEYS), pantallas (título, intermedio), sonidos, música y textos en español.
+- **En curso (2026-10-17): DECORACIÓN Y TEXTURAS** (Zarko lo eligió). Ambientación: pueblo español de
+  pesadilla (cal, piedra, ladrillo, madera, forja, botica, cueva, osario). Cadena lista: construir_pwad
+  acepta --parches arte/texturas/parches y --suelos arte/texturas/suelos (animaciones completas).
+  Agentes: catálogo de materiales (tools/texturas/catalogo.py → arte/texturas/catalogo.json),
+  decoración (tools/arte/decoracion.py), y generadores tools/texturas/{obra,madera_puertas,tecno_metal,
+  suelos_cielo}.py. Son 1047 parches, 801 texturas y 240 suelos. Después: revisión, integrar,
+  enseñárselo a Zarko y republicar la web.
+- Pendiente para más adelante: cara de la barra de estado e iconos (STKEYS), sprite del jugador (PLAY),
+  pantallas (título, intermedio), sonidos, música y textos en español.
 
 ## Pendiente para publicar
 - Build release: quitar `-g` (configure.ac:29) y `-gsource-map --source-map-base /` (configure.ac:118):
