@@ -52,8 +52,9 @@
   ver BESTIARIO). Total: 775 sprites en `pesadilla.wad`. Batería 18/18 OK.
 - **Versión web privada** (para probar desde cualquier navegador): https://claude.ai/artifact/49vRaGHpGDrZzWyRNQC9Bq
   (Artifact privado de claude.ai, solo Zarko). Se genera con `tools/web/empaquetar.sh` (build sin
-  depuración, 15 MB) y se publica `build/web/artefacto.html` con sus ficheros (ver el script). Pendiente:
-  que Zarko confirme que arranca dentro de claude.ai (yo no puedo iniciar sesión en el navegador).
+  depuración, 15 MB) y se publica `build/web/artefacto.html` con sus ficheros (ver el script).
+  **Zarko confirmó (2026-10-17) que carga y se juega bien.** Para actualizarla: empaquetar.sh y publicar
+  el mismo `build/web/artefacto.html` (mismo enlace).
 - Siguiente (a decidir con Zarko): decoración, texturas y suelos, cara de la barra de estado e iconos
   (STKEYS), pantallas (título, intermedio), sonidos, música y textos en español.
 
