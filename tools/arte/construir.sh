@@ -9,12 +9,15 @@ cd "$(dirname "$0")/../.."
 PY=~/.venvs/pesadilla/bin/python
 mkdir -p build/logs
 programas=()
-for f in tools/arte/*.py; do
+for f in tools/arte/*.py tools/texturas/*.py; do
+  [ -f "$f" ] || continue
   grep -q "^if __name__ == '__main__'" "$f" && grep -q -- "--salida" "$f" && programas+=("$f")
 done
 echo "${#programas[@]} piezas: ${programas[*]##*/}"
 printf '%s\n' "${programas[@]}" | xargs -P "$(sysctl -n hw.ncpu 2>/dev/null || nproc)" -I{} \
-  sh -c 'n=$(basename {} .py); if '"$PY"' {} --salida arte/sprites > build/logs/$n.log 2>&1; then echo "  ok  $n"; else echo "  FALLO $n (build/logs/$n.log)"; exit 255; fi'
-$PY tools/wad/construir_pwad.py --iwad wads/freedoom-0.13.0/freedoom1.wad --arte arte/sprites --salida build/pesadilla.wad | tail -1
+  sh -c 'n=$(basename {} .py); case {} in tools/texturas/*) dest=arte/texturas;; *) dest=arte/sprites;; esac; if '"$PY"' {} --salida $dest > build/logs/$n.log 2>&1; then echo "  ok  $n"; else echo "  FALLO $n (build/logs/$n.log)"; exit 255; fi'
+# Texturas: tools/texturas/*.py escriben parches de pared en arte/texturas/parches y suelos en arte/texturas/suelos.
+$PY tools/wad/construir_pwad.py --iwad wads/freedoom-0.13.0/freedoom1.wad --arte arte/sprites \
+    --parches arte/texturas/parches --suelos arte/texturas/suelos --salida build/pesadilla.wad | tail -1
 cp build/pesadilla.wad motor/src/pesadilla.wad
 echo "listo: motor/src/pesadilla.wad"
