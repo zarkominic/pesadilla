@@ -510,9 +510,18 @@
 
             var $ = (id) => document.getElementById(id);
 
-            // Móvil o tableta sin ratón: mandos en pantalla. Para probar: index.html?tactil=1 (o =0).
+            // Móvil o tableta: mandos en pantalla. Para probar: index.html?tactil=1 (o =0).
+            // No basta con preguntar por el puntero: muchos Android dicen tener uno fino (el lápiz de
+            // algunos Samsung, por ejemplo). Si aun así no se detecta, el primer toque los activa.
             var paramTactil = new URLSearchParams(location.search).get("tactil");
-            var TACTIL = paramTactil !== null ? paramTactil === "1" : window.matchMedia("(pointer: coarse)").matches && !window.matchMedia("(any-pointer: fine)").matches;
+            var ua = navigator.userAgent;
+            var TACTIL =
+                paramTactil !== null
+                    ? paramTactil === "1"
+                    : (navigator.userAgentData && navigator.userAgentData.mobile) ||
+                      /Android|iPhone|iPad|iPod|Mobile/i.test(ua) ||
+                      (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) || // iPad que se presenta como Mac
+                      window.matchMedia("(pointer: coarse)").matches;
             if (TACTIL) document.documentElement.classList.add("tactil");
 
             function aviso(id, texto) {
@@ -685,6 +694,19 @@
             });
 
             if (TACTIL) iniciarTactil();
+            else if (paramTactil === null) {
+                // No parecía táctil, pero alguien ha tocado la pantalla: activar los mandos sobre la marcha.
+                var alTocar = (e) => {
+                    if (e.pointerType !== "touch") return;
+                    window.removeEventListener("pointerdown", alTocar, true);
+                    TACTIL = true;
+                    document.documentElement.classList.add("tactil");
+                    if (document.pointerLockElement) document.exitPointerLock();
+                    iniciarTactil();
+                    if (Module.persistOK) Module._M_TouchMode(); // si no, ya lo hará arrancar()
+                };
+                window.addEventListener("pointerdown", alTocar, true);
+            }
 
             // Mandos táctiles. Todos los dedos pasan por #tactil: la mitad izquierda es el stick de moverse,
             // la derecha gira, y los botones se reconocen por posición. Llaman al motor directamente

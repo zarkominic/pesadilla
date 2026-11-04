@@ -59,7 +59,7 @@ tools/arte/construir.sh          # necesita ~/.venvs/pesadilla con numpy y Pillo
 - Partidas y opciones en `/libsdl/pesadilla/`, montado con IDBFS (IndexedDB del navegador); se
   sincroniza tras guardar. Solo una pestaña a la vez (candado). Si cambian los valores de fábrica de
   `default.cfg` (p. ej. teclas), subir `VERSION_CFG` en index.html.
-- Móvil y tableta sin ratón: mandos táctiles en pantalla (`?tactil=1` o `=0` para forzarlos o quitarlos).
+- Móvil y tableta: mandos táctiles en pantalla, según el navegador y el puntero principal, o al primer toque si no se detectó (`?tactil=1` o `=0` para forzarlos o quitarlos).
   Círculo izquierdo: moverse. Círculo derecho: arrastrar gira (velocidad según distancia), toque corto dispara,
   dedo quieto dispara seguido (y si luego arrastra, gira disparando).
 - Controles (seguros en navegador, sin Ctrl): WASD/flechas, ratón gira, clic o Espacio disparan,
