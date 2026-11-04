@@ -122,6 +122,26 @@ def construir_suelos(carpeta, iwad_lumps, mapper):
     return salida
 
 
+def construir_graficos(carpeta, iwad_lumps, mapper):
+    """Gráficos sueltos (cara de la barra, portada, logo): se buscan por nombre, gana el del PWAD."""
+    originales = dict(iwad_lumps)
+    explicit = {}
+    for fn in sorted(os.listdir(carpeta)):
+        if fn.startswith('offsets') and fn.endswith('.json'):
+            explicit.update(json.load(open(os.path.join(carpeta, fn))))
+    salida = []
+    for fn in sorted(os.listdir(carpeta)):
+        if not fn.lower().endswith('.png'):
+            continue
+        name = os.path.splitext(fn)[0].upper()
+        if name not in originales:
+            sys.exit(f'gráfico {name}: no existe en el IWAD')
+        img = Image.open(os.path.join(carpeta, fn)).convert('RGBA')
+        off = explicit.get(name) or struct.unpack('<hh', originales[name][4:8])
+        salida.append((name, encode_patch(img, tuple(off), mapper)))
+    return salida
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--iwad', required=True)
@@ -129,6 +149,7 @@ def main():
     ap.add_argument('--salida', required=True)
     ap.add_argument('--parches', help='carpeta con PNG de parches de pared (opcional)')
     ap.add_argument('--suelos', help='carpeta con PNG de suelos y techos 64x64 (opcional)')
+    ap.add_argument('--graficos', help='carpeta con PNG de gráficos sueltos: STF*, TITLEPIC, M_DOOM (opcional)')
     args = ap.parse_args()
 
     _, iwad_lumps = read_wad(args.iwad)
@@ -161,12 +182,13 @@ def main():
     lumps = [('S_START', b'')] + sprites + [('S_END', b'')]
     parches = construir_parches(args.parches, iwad_lumps, mapper) if args.parches and os.path.isdir(args.parches) else []
     suelos = construir_suelos(args.suelos, iwad_lumps, mapper) if args.suelos and os.path.isdir(args.suelos) else []
-    lumps += parches
+    graficos = construir_graficos(args.graficos, iwad_lumps, mapper) if args.graficos and os.path.isdir(args.graficos) else []
+    lumps += parches + graficos
     if suelos:
         lumps += [('F_START', b'')] + suelos + [('F_END', b'')]
     os.makedirs(os.path.dirname(os.path.abspath(args.salida)), exist_ok=True)
     write_wad(args.salida, lumps)
-    print(f'→ {args.salida}: {len(sprites)} sprites, {len(parches)} parches de pared, {len(suelos)} suelos')
+    print(f'→ {args.salida}: {len(sprites)} sprites, {len(parches)} parches de pared, {len(suelos)} suelos, {len(graficos)} gráficos')
 
 
 if __name__ == '__main__':

@@ -508,6 +508,8 @@ void I_StartTic (void)
         I_ReadMouse();
     }
 
+    I_ReadTouch();  // PESADILLA: touch controls
+
     if (joywait < I_GetTime())
     {
         I_UpdateJoystick();

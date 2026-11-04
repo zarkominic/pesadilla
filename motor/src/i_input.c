@@ -18,6 +18,7 @@
 
 
 #include "SDL.h"
+#include <emscripten.h>
 #include "SDL_keycode.h"
 
 #include "doomkeys.h"
@@ -422,6 +423,48 @@ static int AccelerateMouse(int val)
     else
     {
         return val;
+    }
+}
+
+//
+// PESADILLA: touch controls (motor/src/index.html). The page calls these
+// directly, so they work the same in every mobile browser and don't depend on
+// the window having keyboard focus.
+//
+
+static int touch_look_dx = 0;
+
+EMSCRIPTEN_KEEPALIVE void I_TouchKey(int key, int pressed)
+{
+    event_t ev;
+
+    ev.type = pressed ? ev_keydown : ev_keyup;
+    ev.data1 = key;
+    ev.data2 = key;
+    ev.data3 = key;
+    ev.data4 = 0;
+    D_PostEvent(&ev);
+}
+
+EMSCRIPTEN_KEEPALIVE void I_TouchLook(int dx)
+{
+    touch_look_dx += dx;
+}
+
+// Called once per tic: all the finger movement of a tic is one motion event.
+void I_ReadTouch(void)
+{
+    event_t ev;
+
+    if (touch_look_dx != 0)
+    {
+        ev.type = ev_mouse;
+        ev.data1 = 0;
+        ev.data2 = AccelerateMouse(touch_look_dx);
+        ev.data3 = 0;
+        ev.data4 = 0;
+        touch_look_dx = 0;
+        D_PostEvent(&ev);
     }
 }
 

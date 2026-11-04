@@ -4,6 +4,10 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
         <title>PESADILLA</title>
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+        <meta name="theme-color" content="#0b0909" />
         <meta name="claude:viewport-fit-sides" content="cover" />
         <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23120808'/%3E%3Ctext x='16' y='25' font-family='Georgia,serif' font-size='24' font-weight='bold' text-anchor='middle' fill='%23c41818'%3EP%3C/text%3E%3C/svg%3E" />
         <style>
@@ -55,10 +59,17 @@
             }
 
             header h1 {
-                margin: 0 auto 0 0;
+                margin: 0;
                 font: bold 18px/1 Georgia, serif;
                 letter-spacing: 0.2em;
                 color: var(--rojo);
+            }
+
+            #autor {
+                margin-right: auto;
+                font-size: 12px;
+                line-height: 1.2;
+                color: var(--tenue);
             }
 
             button {
@@ -173,11 +184,220 @@
             #creditos a {
                 color: var(--tenue);
             }
+
+            #controles-tactil,
+            html.tactil #teclas {
+                display: none;
+            }
+
+            html.tactil #controles-tactil {
+                display: table;
+            }
+
+            /* Móvil y tableta: mandos sobre el juego. En vertical, el canvas arriba y los mandos debajo;
+               en horizontal, el canvas a toda altura y los mandos a los lados. */
+            html.tactil,
+            html.tactil body {
+                position: fixed;
+                inset: 0;
+                width: 100%;
+                overscroll-behavior: none;
+                -webkit-text-size-adjust: 100%;
+            }
+
+            html.tactil body {
+                padding: 0 env(safe-area-inset-right, 0px) 0 env(safe-area-inset-left, 0px);
+            }
+
+            html.tactil header {
+                height: auto;
+                min-height: var(--barra);
+                padding: env(safe-area-inset-top, 0px) 16px 0;
+            }
+
+            html.tactil header button {
+                display: none;
+            }
+
+            html.tactil #juego {
+                place-items: start center;
+            }
+
+            #tactil {
+                position: absolute;
+                inset: 0;
+                z-index: 1;
+                touch-action: none;
+                user-select: none;
+                -webkit-user-select: none;
+                -webkit-touch-callout: none;
+                -webkit-tap-highlight-color: transparent;
+                --boton-t: rgba(40, 28, 26, 0.72);
+                --borde-t: rgba(216, 207, 196, 0.45);
+                --fuego-t: rgba(150, 24, 18, 0.8);
+                --hueco: 16px;
+                --abajo: max(20px, env(safe-area-inset-bottom, 0px));
+                --arriba-t: min(75cqw + 8px, 100cqh - 320px);
+            }
+
+            #tactil[hidden] {
+                display: none;
+            }
+
+            .t-btn {
+                position: absolute;
+                display: grid;
+                place-items: center;
+                padding: 0;
+                pointer-events: none; /* los toques los gestiona #tactil: así varios dedos no se estorban */
+                font-size: 13px;
+                font-weight: 600;
+                color: var(--texto);
+                background: var(--boton-t);
+                border: 1px solid var(--borde-t);
+                border-radius: 50%;
+            }
+
+            .t-btn[hidden] {
+                display: none;
+            }
+
+            .t-btn.activo {
+                background: var(--boton-encima);
+                border-color: var(--texto);
+            }
+
+            .t-peq {
+                top: var(--arriba-t);
+                width: 56px;
+                height: 40px;
+                border-radius: 8px;
+            }
+
+            #t-menu { left: var(--hueco); }
+            #t-info { left: calc(var(--hueco) + 64px); width: 44px; }
+            #t-mapa { right: var(--hueco); }
+            #t-pantalla { right: calc(var(--hueco) + 64px); width: 44px; }
+
+            #t-fuego {
+                right: var(--hueco);
+                bottom: var(--abajo);
+                width: 92px;
+                height: 92px;
+                background: var(--fuego-t);
+            }
+
+            #t-usar {
+                right: calc(var(--hueco) + 100px);
+                bottom: calc(var(--abajo) + 10px);
+                width: 68px;
+                height: 68px;
+            }
+
+            #t-arma {
+                right: calc(var(--hueco) + 16px);
+                bottom: calc(var(--abajo) + 104px);
+                width: 60px;
+                height: 60px;
+            }
+
+            #t-base {
+                position: absolute;
+                left: calc(var(--hueco) + 8px);
+                bottom: calc(var(--abajo) + 8px);
+                width: 120px;
+                height: 120px;
+                pointer-events: none;
+                background: rgba(40, 28, 26, 0.4);
+                border: 1px solid var(--borde-t);
+                border-radius: 50%;
+            }
+
+            #t-palo {
+                position: absolute;
+                left: 34px;
+                top: 34px;
+                width: 52px;
+                height: 52px;
+                background: var(--boton-t);
+                border: 1px solid var(--texto);
+                border-radius: 50%;
+            }
+
+            #t-sino {
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: min(75cqw + 60px, 50cqh);
+                display: flex;
+                justify-content: center;
+                gap: 24px;
+                pointer-events: none;
+            }
+
+            #t-sino[hidden] {
+                display: none;
+            }
+
+            #t-sino .t-btn {
+                position: static;
+                width: 88px;
+                height: 56px;
+                font-size: 16px;
+                border-radius: 8px;
+                background: var(--fuego-t);
+            }
+
+            @media (orientation: landscape) {
+                html.tactil header {
+                    display: none;
+                }
+
+                html.tactil #juego {
+                    place-items: center;
+                }
+
+                #tactil {
+                    --arriba-t: max(8px, env(safe-area-inset-top, 0px));
+                    --hueco: 8px;
+                    --abajo: max(12px, env(safe-area-inset-bottom, 0px));
+                }
+
+                #t-info { left: var(--hueco); top: calc(var(--arriba-t) + 48px); }
+                #t-pantalla { right: var(--hueco); top: calc(var(--arriba-t) + 48px); }
+                #t-usar { right: calc(var(--hueco) + 12px); bottom: calc(var(--abajo) + 100px); }
+                #t-arma { right: calc(var(--hueco) + 16px); bottom: calc(var(--abajo) + 176px); }
+            }
+
+            #empezar {
+                z-index: 4;
+                background: var(--negro);
+                cursor: pointer;
+                touch-action: manipulation;
+            }
+
+            #empezar[hidden] {
+                display: none;
+            }
+
+            #empezar h2 {
+                margin: 0 0 8px;
+                font: bold 28px/1 Georgia, serif;
+                letter-spacing: 0.2em;
+                color: var(--rojo);
+            }
+
+            #empezar small {
+                display: block;
+                margin-bottom: 24px;
+                color: var(--tenue);
+            }
         </style>
     </head>
     <body>
         <header>
             <h1>PESADILLA</h1>
+            <span id="autor">Adaptación hecha por Novak M.</span>
             <button id="btn-controles" type="button" aria-expanded="false">Controles</button>
             <button id="btn-pantalla" type="button">Pantalla completa</button>
         </header>
@@ -188,11 +408,36 @@
             <div id="otra-pestana" class="aviso" hidden>
                 <p>PESADILLA ya está abierto en otra pestaña. Ciérrala y recarga esta.</p>
             </div>
-            <div id="movil" class="aviso" hidden>
-                <p>PESADILLA se juega con teclado y ratón. Ábrelo en un ordenador.<br /><br /><button type="button" id="btn-movil">Probar igualmente</button></p>
+            <div id="tactil" hidden>
+                <div id="t-base" aria-hidden="true"><div id="t-palo"></div></div>
+                <div class="t-btn" id="t-fuego" role="button" aria-label="Disparar">Fuego</div>
+                <div class="t-btn" id="t-usar" role="button" aria-label="Usar o abrir">Usar</div>
+                <div class="t-btn" id="t-arma" role="button" aria-label="Siguiente arma">Arma</div>
+                <div class="t-btn t-peq" id="t-menu" role="button">Menú</div>
+                <div class="t-btn t-peq" id="t-info" role="button" aria-label="Controles y créditos">?</div>
+                <div class="t-btn t-peq" id="t-mapa" role="button">Mapa</div>
+                <div class="t-btn t-peq" id="t-pantalla" role="button" aria-label="Pantalla completa" hidden>⛶</div>
+                <div id="t-sino" hidden>
+                    <div class="t-btn" id="t-si" role="button">Sí</div>
+                    <div class="t-btn" id="t-no" role="button">No</div>
+                </div>
+            </div>
+            <div id="empezar" class="aviso" hidden>
+                <div>
+                    <h2>PESADILLA</h2>
+                    <small>Adaptación hecha por Novak M.</small>
+                    <p>Toca para jugar</p>
+                </div>
             </div>
             <div id="controles" hidden>
-                <table>
+                <table id="controles-tactil">
+                    <tr><td>Moverse</td><td>dedo en la mitad izquierda (a tope, corre)</td></tr>
+                    <tr><td>Girar</td><td>arrastra en la mitad derecha o sobre Fuego</td></tr>
+                    <tr><td>Fuego</td><td>disparar (en los menús, aceptar)</td></tr>
+                    <tr><td>Usar</td><td>abrir puertas, pulsar interruptores, reaparecer</td></tr>
+                    <tr><td>Arma</td><td>cambia a la siguiente</td></tr>
+                </table>
+                <table id="teclas">
                     <tr><td>Moverse</td><td>W A S D o flechas</td></tr>
                     <tr><td>Girar</td><td>ratón o ← →</td></tr>
                     <tr><td>Disparar</td><td>clic izquierdo o Espacio</td></tr>
@@ -205,6 +450,7 @@
                     <tr><td>Guardar / cargar</td><td>F2 / F3 (en Mac: fn + F2)</td></tr>
                 </table>
                 <p id="creditos">
+                    Adaptación hecha por Novak M.
                     Motor: <a href="https://www.chocolate-doom.org/" target="_blank" rel="noopener">Chocolate Doom</a> y
                     <a href="https://github.com/cloudflare/doom-wasm" target="_blank" rel="noopener">doom-wasm</a> (GPL-2.0).
                     Niveles: <a href="https://freedoom.github.io/" target="_blank" rel="noopener">Freedoom</a> (BSD).
@@ -237,6 +483,11 @@
                 .concat(extra);
 
             var $ = (id) => document.getElementById(id);
+
+            // Móvil o tableta sin ratón: mandos en pantalla. Para probar: index.html?tactil=1 (o =0).
+            var paramTactil = new URLSearchParams(location.search).get("tactil");
+            var TACTIL = paramTactil !== null ? paramTactil === "1" : window.matchMedia("(pointer: coarse)").matches && !window.matchMedia("(any-pointer: fine)").matches;
+            if (TACTIL) document.documentElement.classList.add("tactil");
 
             function aviso(id, texto) {
                 $("cargando").hidden = true;
@@ -364,6 +615,10 @@
                         FS.writeFile(marca, VERSION_CFG);
                     }
                     $("cargando").hidden = true;
+                    if (TACTIL) {
+                        Module._M_TouchMode();
+                        $("empezar").hidden = false;
+                    }
                     callMain(commonArgs);
                     $("canvas").focus();
                 });
@@ -403,10 +658,220 @@
                 $("canvas").focus();
             });
 
-            // Pantallas táctiles sin ratón: avisar de que hace falta teclado y ratón.
-            if (window.matchMedia("(pointer: coarse)").matches && !window.matchMedia("(any-pointer: fine)").matches) {
-                $("movil").hidden = false;
-                $("btn-movil").addEventListener("click", () => ($("movil").hidden = true));
+            if (TACTIL) iniciarTactil();
+
+            // Mandos táctiles. Todos los dedos pasan por #tactil: la mitad izquierda es el stick de moverse,
+            // la derecha gira, y los botones se reconocen por posición. Llaman al motor directamente
+            // (I_TouchKey, I_TouchLook…), sin simular eventos de teclado.
+            function iniciarTactil() {
+                // Sin bloqueo de puntero: congela las coordenadas de los toques, y aquí no hace falta.
+                $("canvas").requestPointerLock = undefined;
+                var zona = $("tactil");
+                var K = { arriba: 0xad, abajo: 0xaf, izq: 0xac, der: 0xae, esc: 27, enter: 13, tab: 9, espacio: 32, e: 101, a: 97, d: 100, s: 121, n: 110, mayus: 0xb6 };
+                var RADIO = 48; // px de recorrido del stick
+                var GIRO = 6; // unidades de ratón del motor por px de dedo
+                var dedos = new Map(); // pointerId → { tipo, ... }
+                var pulsadas = new Map(); // tecla → nº de dedos que la mantienen
+                var resto = 0;
+                var estado = 3; // M_TouchState: 0 jugando, 1 menú, 2 sí/no, 3 portada
+                var ejes = { x: 0, y: 0, corre: 0 };
+
+                function tecla(k, abajo) {
+                    var n = (pulsadas.get(k) || 0) + (abajo ? 1 : -1);
+                    if (n < 0) return;
+                    pulsadas.set(k, n);
+                    if (abajo ? n === 1 : n === 0) Module._I_TouchKey(k, abajo ? 1 : 0);
+                }
+
+                function soltarTodo() {
+                    pulsadas.forEach((n, k) => {
+                        if (n > 0) Module._I_TouchKey(k, 0);
+                    });
+                    pulsadas.clear();
+                    dedos.clear();
+                    moverStick(0, 0);
+                    ejes = { x: 0, y: 0, corre: 0 };
+                }
+
+                // Pasa de una dirección a otra en un eje soltando la anterior.
+                function eje(nombre, valor) {
+                    if (ejes[nombre] === valor) return;
+                    if (ejes[nombre]) tecla(ejes[nombre], false);
+                    if (valor) tecla(valor, true);
+                    ejes[nombre] = valor;
+                }
+
+                function moverStick(dx, dy) {
+                    $("t-palo").style.transform = "translate(" + dx + "px," + dy + "px)";
+                    var lat = dx / RADIO,
+                        fre = dy / RADIO;
+                    var menu = estado !== 0;
+                    eje("y", fre < -0.4 ? K.arriba : fre > 0.4 ? K.abajo : 0);
+                    // En juego, izquierda/derecha es paso lateral; en los menús, las flechas (volumen).
+                    eje("x", lat < -0.45 ? (menu ? K.izq : K.a) : lat > 0.45 ? (menu ? K.der : K.d) : 0);
+                    eje("corre", !menu && Math.hypot(lat, fre) > 0.9 ? K.mayus : 0);
+                }
+
+                function mirar(dx) {
+                    if (estado !== 0) return;
+                    resto += dx * GIRO;
+                    var entero = Math.trunc(resto);
+                    resto -= entero;
+                    if (entero) Module._I_TouchLook(entero);
+                }
+
+                // Qué hace cada botón según estemos jugando, en un menú o en la portada.
+                function accion(id) {
+                    if (id === "t-menu") return { k: K.esc };
+                    if (id === "t-mapa") return estado === 0 ? { k: K.tab } : null;
+                    if (id === "t-si") return { k: K.s };
+                    if (id === "t-no") return { k: K.n };
+                    if (id === "t-fuego" || id === "t-usar") {
+                        if (estado === 1) return { k: K.enter };
+                        if (estado === 3) return { k: K.esc };
+                        if (estado === 0) return { k: id === "t-fuego" ? K.espacio : K.e };
+                    }
+                    return null;
+                }
+
+                var botones = [].slice.call(zona.querySelectorAll(".t-btn"));
+                function botonEn(x, y) {
+                    var margen = 6;
+                    return botones.find((b) => {
+                        if (b.hidden || (b.parentElement.hidden)) return false;
+                        var r = b.getBoundingClientRect();
+                        return x >= r.left - margen && x <= r.right + margen && y >= r.top - margen && y <= r.bottom + margen;
+                    });
+                }
+
+                zona.addEventListener("pointerdown", (e) => {
+                    e.preventDefault();
+                    try {
+                        zona.setPointerCapture(e.pointerId);
+                    } catch (_) {}
+                    var b = botonEn(e.clientX, e.clientY);
+                    if (b) {
+                        b.classList.add("activo");
+                        var d = { tipo: "boton", b: b, x: e.clientX };
+                        if (b.id === "t-info") {
+                            $("controles").hidden = !$("controles").hidden;
+                        } else if (b.id === "t-pantalla") {
+                            pantallaCompleta();
+                        } else if (b.id === "t-arma") {
+                            if (estado === 0) Module._G_TouchNextWeapon();
+                        } else {
+                            var a = accion(b.id);
+                            if (a) {
+                                d.k = a.k;
+                                tecla(a.k, true);
+                            }
+                        }
+                        dedos.set(e.pointerId, d);
+                        return;
+                    }
+                    var r = zona.getBoundingClientRect();
+                    if (e.clientX < r.left + r.width / 2) {
+                        // El stick nace donde se pone el dedo.
+                        var base = $("t-base");
+                        base.style.left = e.clientX - r.left - 60 + "px";
+                        base.style.bottom = r.bottom - e.clientY - 60 + "px";
+                        dedos.set(e.pointerId, { tipo: "stick", x0: e.clientX, y0: e.clientY });
+                    } else {
+                        if (estado === 3) {
+                            tecla(K.esc, true);
+                            dedos.set(e.pointerId, { tipo: "boton", k: K.esc, x: e.clientX });
+                        } else {
+                            dedos.set(e.pointerId, { tipo: "mirar", x: e.clientX });
+                        }
+                    }
+                });
+
+                zona.addEventListener("pointermove", (e) => {
+                    var d = dedos.get(e.pointerId);
+                    if (!d) return;
+                    e.preventDefault();
+                    if (d.tipo === "stick") {
+                        var dx = e.clientX - d.x0,
+                            dy = e.clientY - d.y0,
+                            m = Math.hypot(dx, dy);
+                        if (m > RADIO) {
+                            dx *= RADIO / m;
+                            dy *= RADIO / m;
+                        }
+                        moverStick(dx, dy);
+                    } else if (d.tipo === "mirar" || (d.tipo === "boton" && d.b && d.b.id === "t-fuego")) {
+                        mirar(e.clientX - d.x); // con Fuego pulsado también se puede girar
+                        d.x = e.clientX;
+                    }
+                });
+
+                function soltar(e) {
+                    var d = dedos.get(e.pointerId);
+                    if (!d) return;
+                    dedos.delete(e.pointerId);
+                    if (d.tipo === "stick") {
+                        moverStick(0, 0);
+                        var base = $("t-base");
+                        base.style.left = "";
+                        base.style.bottom = "";
+                    } else if (d.tipo === "boton") {
+                        if (d.b) d.b.classList.remove("activo");
+                        if (d.k) tecla(d.k, false);
+                    }
+                }
+                zona.addEventListener("pointerup", soltar);
+                zona.addEventListener("pointercancel", soltar);
+                zona.addEventListener("contextmenu", (e) => e.preventDefault());
+                document.addEventListener("gesturestart", (e) => e.preventDefault());
+                document.addEventListener("visibilitychange", () => {
+                    if (document.hidden && Module._I_TouchKey) soltarTodo();
+                });
+
+                // Sonido: los móviles solo lo dejan arrancar tras un toque.
+                function activarSonido() {
+                    var ctx = Module.SDL2 && Module.SDL2.audioContext;
+                    if (ctx && ctx.state !== "running") ctx.resume().catch(() => {});
+                }
+                ["pointerup", "touchend", "click"].forEach((t) => document.addEventListener(t, activarSonido, { passive: true }));
+
+                function pantallaCompleta() {
+                    var z = $("juego");
+                    var p = document.fullscreenElement
+                        ? document.exitFullscreen()
+                        : z.requestFullscreen
+                          ? z.requestFullscreen()
+                          : null;
+                    if (p)
+                        p.then(() => {
+                            if (document.fullscreenElement && screen.orientation && screen.orientation.lock) return screen.orientation.lock("landscape");
+                        }).catch(() => {});
+                }
+                $("t-pantalla").hidden = !$("juego").requestFullscreen;
+
+                $("empezar").addEventListener("click", () => {
+                    $("empezar").hidden = true;
+                    activarSonido();
+                    if ($("juego").requestFullscreen) pantallaCompleta();
+                });
+
+                zona.hidden = false;
+                setInterval(() => {
+                    if (!Module._M_TouchState || !Module.persistOK) return;
+                    var nuevo = Module._M_TouchState();
+                    if (nuevo === estado) return;
+                    estado = nuevo;
+                    $("t-sino").hidden = estado !== 2;
+                    $("t-fuego").textContent = estado === 0 ? "Fuego" : "OK";
+                    $("t-usar").textContent = estado === 0 ? "Usar" : "OK";
+                    moverStick(0, 0);
+                    // Un stick mantenido seguiría empujando con la tecla equivocada: se recoloca con el siguiente movimiento.
+                    dedos.forEach((d, id) => {
+                        if (d.tipo === "stick") dedos.delete(id);
+                    });
+                    var base = $("t-base");
+                    base.style.left = "";
+                    base.style.bottom = "";
+                }, 100);
             }
         </script>
         <script src="pesadilla.js"></script>

@@ -15,6 +15,7 @@
 // DESCRIPTION:  none
 //
 
+#include <emscripten.h>
 #include <emscripten/websocket.h>
 #include <math.h>
 #include <stdlib.h>
@@ -159,6 +160,12 @@ static int *weapon_keys[] = {&key_weapon1, &key_weapon2, &key_weapon3, &key_weap
 // Set to -1 or +1 to switch to the previous or next weapon.
 
 static int next_weapon = 0;
+
+// PESADILLA: "next weapon" button of the touch controls.
+EMSCRIPTEN_KEEPALIVE void G_TouchNextWeapon(void)
+{
+    next_weapon = 1;
+}
 
 // Used for prev/next weapon keys.
 

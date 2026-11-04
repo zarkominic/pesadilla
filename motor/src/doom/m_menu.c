@@ -18,6 +18,7 @@
 //
 
 
+#include <emscripten.h>
 #include <stdlib.h>
 #include <ctype.h>
 
@@ -115,6 +116,34 @@ int			saveStringEnter;
 int             	saveSlot;	// which slot to save in
 int			saveCharIndex;	// which char we're editing
 static boolean          joypadSave = false; // was the save action initiated by joypad?
+
+// PESADILLA: touch controls. No keyboard to type a save name, so slots get the
+// default name (as with a joypad).
+static boolean          touch_mode = false;
+
+EMSCRIPTEN_KEEPALIVE void M_TouchMode(void)
+{
+    touch_mode = true;
+}
+
+// What the touch buttons should do now:
+// 0 playing, 1 menu, 2 yes/no question, 3 title screen or demo.
+EMSCRIPTEN_KEEPALIVE int M_TouchState(void)
+{
+    if (messageToPrint && messageNeedsInput)
+    {
+        return 2;
+    }
+    if (menuactive || messageToPrint)
+    {
+        return 1;
+    }
+    if (gamestate == GS_DEMOSCREEN || demoplayback)
+    {
+        return 3;
+    }
+    return 0;
+}
 // old save description before edit
 char			saveOldString[SAVESTRINGSIZE];  
 
@@ -682,7 +711,7 @@ void M_SaveSelect(int choice)
     {
         savegamestrings[choice][0] = 0;
 
-        if (joypadSave)
+        if (joypadSave || touch_mode)
         {
             SetDefaultSaveName(choice);
         }
