@@ -20,13 +20,13 @@ rm -rf "$OUT"; mkdir -p "$OUT"
 cp "$TMP/motor/src/pesadilla.js" "$TMP/motor/src/pesadilla.wasm" "$OUT/"
 cp motor/src/default.cfg "$OUT/"
 gzip -9 -n -c wads/freedoom-0.13.0/freedoom1.wad > "$OUT/doom1.wad.gz"
-cp build/pesadilla.wad "$OUT/"
-sed 's/var EMPAQUETADOS = {};/var EMPAQUETADOS = {"doom1.wad": "doom1.wad.gz"};/' motor/src/index.html > "$OUT/index.html"
-grep -q 'var EMPAQUETADOS = {"doom1.wad": "doom1.wad.gz"};' "$OUT/index.html" || { echo "no se pudo activar EMPAQUETADOS en index.html"; exit 1; }
+gzip -9 -n -c build/pesadilla.wad > "$OUT/pesadilla.wad.gz"
+sed 's/var EMPAQUETADOS = {};/var EMPAQUETADOS = {"doom1.wad": "doom1.wad.gz", "pesadilla.wad": "pesadilla.wad.gz"};/' motor/src/index.html > "$OUT/index.html"
+grep -q '"pesadilla.wad": "pesadilla.wad.gz"' "$OUT/index.html" || { echo "no se pudo activar EMPAQUETADOS en index.html"; exit 1; }
 # Para el Artifact (solo sirve tipos web): WADs comprimidos y en base64 dentro de .txt.
 mkdir -p "$OUT/artefacto"
 base64 -i "$OUT/doom1.wad.gz" -o "$OUT/artefacto/doom1.wad.gz.b64.txt"
-gzip -9 -n -c build/pesadilla.wad | base64 -o "$OUT/artefacto/pesadilla.wad.gz.b64.txt"
+base64 -i "$OUT/pesadilla.wad.gz" -o "$OUT/artefacto/pesadilla.wad.gz.b64.txt"
 # artefacto.html: la misma página para publicarla como Artifact de claude.ai (la plataforma pone su
 # propio esqueleto <!doctype><html><head><body>, el charset y el viewport).
 python3 - "$OUT/index.html" "$OUT/artefacto.html" <<'PY'

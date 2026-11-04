@@ -66,15 +66,17 @@ Para actualizarla: `tools/web/empaquetar.sh` y `tools/web/publicar.sh`.
   suelos_cielo}.py. Son 1047 parches, 801 texturas y 240 suelos. Después: revisión, integrar,
   enseñárselo a Zarko y republicar la web.
   Estado (2026-11-04): catálogo y decoración hechos (85 sprites, dentro del WAD, SIN revisar por Zarko).
-  Los 4 generadores de texturas NO están hechos (se cortaron por límite semanal): paredes y suelos siguen
-  siendo de Freedoom.
+  **Texturas hechas (2026-11-04):** `tools/texturas/generar.py` (980 parches, 236 suelos, cielos) por
+  materiales: cal, ladrillo, piedra, roca, hierro, nogal, osario, cobre, candil, baldosa hidráulica. Conserva
+  la forma de cada parche original (Freedoom, BSD). Sin redibujar: cascadas, limo y colores de llave.
+  Cargados los 36 mapas sin errores. Pendiente del visto bueno de Zarko.
 - **Móvil, bandana y crédito (2026-11-04):** mandos táctiles en index.html (`?tactil=1` para probar) que
   llaman al motor con I_TouchKey, I_TouchLook, G_TouchNextWeapon, M_TouchState y M_TouchMode. Cara de la barra
   con bandana de España (`tools/graficos/cara.py`, 42 STF*), TITLEPIC y M_DOOM con «Adaptación hecha por
   Novak M.» (`tools/graficos/portada.py`). Probado en móvil emulado (Chrome) en las dos orientaciones contra
   la web pública. **No probado en un iPhone ni en Safari real.**
 - Historial reescrito antes de hacer público el repo: autor `zarkominic` con email noreply de GitHub.
-- Pendiente para más adelante: texturas, iconos de llaves (STKEYS), sprite del jugador (PLAY, no se ve en
+- Pendiente para más adelante: iconos de llaves (STKEYS), sprite del jugador (PLAY, no se ve en
   una partida normal), pantalla de ayuda «Read This», intermedio, sonidos, música y textos en español.
 
 ## Pendiente para publicar

@@ -6,7 +6,7 @@ cd "$(dirname "$0")/../.."
 T="$(mktemp -d)"
 trap 'rm -rf "$T"' EXIT
 cd build/web
-cp index.html default.cfg doom1.wad.gz pesadilla.js pesadilla.wad pesadilla.wasm \
+cp index.html default.cfg doom1.wad.gz pesadilla.wad.gz pesadilla.js pesadilla.wasm \
    LICENCIA-MOTOR-GPL2.txt LICENCIA-FREEDOOM.txt CREDITOS-FREEDOOM.txt "$T"/
 cd "$T"
 touch .nojekyll
