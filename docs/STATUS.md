@@ -1,6 +1,9 @@
 # STATUS — PESADILLA
 
-**Última actualización:** 2026-10-16 · CLI (Mac)
+**Última actualización:** 2026-11-04 · app de escritorio (Mac)
+
+**Web pública:** https://zarkominic.github.io/pesadilla/ (repo público, rama `gh-pages`).
+Para actualizarla: `tools/web/empaquetar.sh` y `tools/web/publicar.sh`.
 
 ## Hecho
 - Carpeta y git creados. Plan y licencias en CLAUDE.md.
@@ -62,15 +65,20 @@
   decoración (tools/arte/decoracion.py), y generadores tools/texturas/{obra,madera_puertas,tecno_metal,
   suelos_cielo}.py. Son 1047 parches, 801 texturas y 240 suelos. Después: revisión, integrar,
   enseñárselo a Zarko y republicar la web.
-- Pendiente para más adelante: cara de la barra de estado e iconos (STKEYS), sprite del jugador (PLAY),
-  pantallas (título, intermedio), sonidos, música y textos en español.
+  Estado (2026-11-04): catálogo y decoración hechos (85 sprites, dentro del WAD, SIN revisar por Zarko).
+  Los 4 generadores de texturas NO están hechos (se cortaron por límite semanal): paredes y suelos siguen
+  siendo de Freedoom.
+- **Móvil, bandana y crédito (2026-11-04):** mandos táctiles en index.html (`?tactil=1` para probar) que
+  llaman al motor con I_TouchKey, I_TouchLook, G_TouchNextWeapon, M_TouchState y M_TouchMode. Cara de la barra
+  con bandana de España (`tools/graficos/cara.py`, 42 STF*), TITLEPIC y M_DOOM con «Adaptación hecha por
+  Novak M.» (`tools/graficos/portada.py`). Probado en móvil emulado (Chrome) en las dos orientaciones contra
+  la web pública. **No probado en un iPhone ni en Safari real.**
+- Historial reescrito antes de hacer público el repo: autor `zarkominic` con email noreply de GitHub.
+- Pendiente para más adelante: texturas, iconos de llaves (STKEYS), sprite del jugador (PLAY, no se ve en
+  una partida normal), pantalla de ayuda «Read This», intermedio, sonidos, música y textos en español.
 
 ## Pendiente para publicar
-- Build release: quitar `-g` (configure.ac:29) y `-gsource-map --source-map-base /` (configure.ac:118):
-  wasm 7,7 → 2,2 MB (enlazar con `--emit-symbol-map` para seguir pudiendo traducir errores; ese fichero no se
-  publica). Servir comprimido (gzip/brotli): descarga total de 37 MB a ~11 MB. El WAD final
-  debería llevar solo lo que usemos (Freedoom1 completo es el 90 % de la descarga).
-- Repo público (GPL) y créditos de Freedoom (CREDITS.txt) junto al juego.
+- El WAD final debería llevar solo lo que usemos (Freedoom1 completo es la mayor parte de la descarga).
 - Opcional: D_RunFrame duerme con Asyncify ~210 veces/s (≈265 rAF/s); se puede alinear a vsync.
 
 ## Preguntas abiertas
