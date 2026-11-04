@@ -152,6 +152,54 @@ void D_ProcessEvents(void)
 }
 
 //
+// D_DrawCrosshair (PESADILLA)
+//
+// Small cross at the centre of the 3D view, where shots go. Yellow with a black
+// edge so it can be seen on any wall. Not shown in demos or when dead.
+//
+
+static void D_DrawCrosshair(void)
+{
+    static const signed char arm[][2] = {
+        {2, 0}, {3, 0}, {4, 0}, {-2, 0}, {-3, 0}, {-4, 0},
+        {0, 2}, {0, 3}, {0, 4}, {0, -2}, {0, -3}, {0, -4},
+    };
+    int cx = viewwindowx + scaledviewwidth / 2;
+    int cy = viewwindowy + viewheight / 2;
+    int pass, n, d, e;
+
+    if (demoplayback || players[displayplayer].health <= 0)
+    {
+        return;
+    }
+
+    for (pass = 0; pass < 2; ++pass)
+    {
+        for (n = 0; n < 12; ++n)
+        {
+            int x = cx + arm[n][0];
+            int y = cy + arm[n][1];
+
+            if (pass == 1)
+            {
+                I_VideoBuffer[y * SCREENWIDTH + x] = 231;
+                continue;
+            }
+            for (d = -1; d <= 1; ++d)
+            {
+                for (e = -1; e <= 1; ++e)
+                {
+                    if (d == 0 || e == 0)
+                    {
+                        I_VideoBuffer[(y + e) * SCREENWIDTH + x + d] = 0;
+                    }
+                }
+            }
+        }
+    }
+}
+
+//
 // D_Display
 //  draw current display, possibly wiping it from the previous
 //
@@ -221,7 +269,11 @@ boolean D_Display(void)
     I_UpdateNoBlit();
 
     // draw the view directly
-    if (gamestate == GS_LEVEL && !automapactive && gametic) R_RenderPlayerView(&players[displayplayer]);
+    if (gamestate == GS_LEVEL && !automapactive && gametic)
+    {
+        R_RenderPlayerView(&players[displayplayer]);
+        D_DrawCrosshair();
+    }
 
     if (gamestate == GS_LEVEL && gametic) HU_Drawer();
 

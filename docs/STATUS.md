@@ -75,6 +75,7 @@ Para actualizarla: `tools/web/empaquetar.sh` y `tools/web/publicar.sh`.
   con bandana de España (`tools/graficos/cara.py`, 42 STF*), TITLEPIC y M_DOOM con «Adaptación hecha por
   Novak M.» (`tools/graficos/portada.py`). Probado en móvil emulado (Chrome) en las dos orientaciones contra
   la web pública. **No probado en un iPhone ni en Safari real.**
+- Cruz de mira (2026-11-04): D_DrawCrosshair en motor/src/doom/d_main.c, centro de la vista; no sale en demos ni al morir.
 - Historial reescrito antes de hacer público el repo: autor `zarkominic` con email noreply de GitHub.
 - Pendiente para más adelante: iconos de llaves (STKEYS), sprite del jugador (PLAY, no se ve en
   una partida normal), pantalla de ayuda «Read This», intermedio, sonidos, música y textos en español.
