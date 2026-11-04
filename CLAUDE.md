@@ -60,6 +60,7 @@ tools/arte/construir.sh          # necesita ~/.venvs/pesadilla con numpy y Pillo
   sincroniza tras guardar. Solo una pestaña a la vez (candado). Si cambian los valores de fábrica de
   `default.cfg` (p. ej. teclas), subir `VERSION_CFG` en index.html.
 - Móvil y tableta sin ratón: mandos táctiles en pantalla (`?tactil=1` o `=0` para forzarlos o quitarlos).
+  Mitad derecha: arrastrar gira, toque corto dispara, dedo quieto dispara seguido.
 - Controles (seguros en navegador, sin Ctrl): WASD/flechas, ratón gira, clic o Espacio disparan,
   E o Enter usan/reaparecen, Mayús corre, C o Alt + flechas paso lateral.
 - Música: OPL emulado (snd_musicdevice 3). Memoria: empieza en 64 MB y crece si hace falta; caché de sonido 16 MB

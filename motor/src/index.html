@@ -433,7 +433,7 @@
                 <table id="controles-tactil">
                     <tr><td>Moverse</td><td>dedo en la mitad izquierda (a tope, corre)</td></tr>
                     <tr><td>Girar</td><td>arrastra en la mitad derecha o sobre Fuego</td></tr>
-                    <tr><td>Fuego</td><td>disparar (en los menús, aceptar)</td></tr>
+                    <tr><td>Disparar</td><td>toca la mitad derecha (dedo quieto: seguido) o Fuego</td></tr>
                     <tr><td>Usar</td><td>abrir puertas, pulsar interruptores, reaparecer</td></tr>
                     <tr><td>Arma</td><td>cambia a la siguiente</td></tr>
                 </table>
@@ -670,6 +670,8 @@
                 var K = { arriba: 0xad, abajo: 0xaf, izq: 0xac, der: 0xae, esc: 27, enter: 13, tab: 9, espacio: 32, e: 101, a: 97, d: 100, s: 121, n: 110, mayus: 0xb6 };
                 var RADIO = 48; // px de recorrido del stick
                 var GIRO = 6; // unidades de ratón del motor por px de dedo
+                var TOQUE_MS = 220; // más que esto con el dedo quieto: disparo continuo
+                var TOQUE_PX = 10; // más que esto: es un arrastre, no un toque
                 var dedos = new Map(); // pointerId → { tipo, ... }
                 var pulsadas = new Map(); // tecla → nº de dedos que la mantienen
                 var resto = 0;
@@ -781,7 +783,15 @@
                             tecla(K.esc, true);
                             dedos.set(e.pointerId, { tipo: "boton", k: K.esc, x: e.clientX });
                         } else {
-                            dedos.set(e.pointerId, { tipo: "mirar", x: e.clientX });
+                            // Arrastrar gira; un toque corto dispara; dejar el dedo quieto dispara seguido.
+                            var m = { tipo: "mirar", x: e.clientX, x0: e.clientX, y0: e.clientY, t: performance.now(), movido: false, fuego: false };
+                            m.espera = setTimeout(() => {
+                                if (dedos.get(e.pointerId) === m && !m.movido && estado === 0) {
+                                    m.fuego = true;
+                                    tecla(K.espacio, true);
+                                }
+                            }, TOQUE_MS);
+                            dedos.set(e.pointerId, m);
                         }
                     }
                 });
@@ -800,6 +810,10 @@
                         }
                         moverStick(dx, dy);
                     } else if (d.tipo === "mirar" || (d.tipo === "boton" && d.b && d.b.id === "t-fuego")) {
+                        if (d.tipo === "mirar" && !d.movido && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) > TOQUE_PX) {
+                            d.movido = true;
+                            clearTimeout(d.espera);
+                        }
                         mirar(e.clientX - d.x); // con Fuego pulsado también se puede girar
                         d.x = e.clientX;
                     }
@@ -814,6 +828,15 @@
                         var base = $("t-base");
                         base.style.left = "";
                         base.style.bottom = "";
+                    } else if (d.tipo === "mirar") {
+                        clearTimeout(d.espera);
+                        if (d.fuego) {
+                            tecla(K.espacio, false);
+                        } else if (!d.movido && estado === 0 && performance.now() - d.t < TOQUE_MS) {
+                            // Toque corto: la tecla dura lo bastante para que el motor la vea en un tic.
+                            tecla(K.espacio, true);
+                            setTimeout(() => tecla(K.espacio, false), 120);
+                        }
                     } else if (d.tipo === "boton") {
                         if (d.b) d.b.classList.remove("activo");
                         if (d.k) tecla(d.k, false);
