@@ -47,7 +47,11 @@ shotgun!», «You got the chainsaw!»…): cambiarlos cuando se traduzcan los te
 | Munición | CLIP, AMMO, SHEL, SBOX, ROCK, BROK, CELL, CELP, BPAK | bolsita y caja de balas de plomo, cartuchos y caja, cohete y caja de cohetes de feria, tarro y damajuana de fuegos fatuos, zurrón |
 | Barril | BAR1, BEXP | barril de pólvora con mecha y calavera de cal; estalla en duelas |
 
-Scripts: `tools/arte/salud.py`, `poderes.py`, `municion.py`. Pendiente: iconos de llaves de la barra de estado (STKEYS).
+Scripts: `tools/arte/salud.py`, `poderes.py`, `municion.py`. Iconos de llaves de la barra: `tools/graficos/llaves.py`.
+
+## Protagonista (2026-11-04)
+
+Chaqueta de cuero, pistolón y bandana de España: cara de la barra (`tools/graficos/cara.py`) y sprite PLAY (`tools/arte/jugador.py`, cuyos fotogramas de muerte son cadáveres de decoración en los mapas).
 
 ## Cómo se hace cada pieza
 
