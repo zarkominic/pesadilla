@@ -279,24 +279,49 @@
             #t-mapa { right: var(--hueco); }
             #t-pantalla { right: calc(var(--hueco) + 64px); width: 44px; }
 
-            #t-fuego {
-                right: var(--hueco);
-                bottom: var(--abajo);
-                width: 92px;
-                height: 92px;
+            /* Círculo derecho: girar y disparar. Mismo tamaño que el de moverse. */
+            #t-mira {
+                position: absolute;
+                right: calc(var(--hueco) + 8px);
+                bottom: calc(var(--abajo) + 8px);
+                width: 120px;
+                height: 120px;
+                pointer-events: none;
+                background: rgba(40, 28, 26, 0.4);
+                border: 1px solid var(--borde-t);
+                border-radius: 50%;
+            }
+
+            #t-palo-mira {
+                position: absolute;
+                left: 30px;
+                top: 30px;
+                width: 60px;
+                height: 60px;
+                display: grid;
+                place-items: center;
+                font-size: 13px;
+                font-weight: 600;
+                color: var(--texto);
                 background: var(--fuego-t);
+                border: 1px solid var(--texto);
+                border-radius: 50%;
+            }
+
+            #t-mira.disparando #t-palo-mira {
+                background: var(--rojo);
             }
 
             #t-usar {
-                right: calc(var(--hueco) + 100px);
-                bottom: calc(var(--abajo) + 10px);
+                right: calc(var(--hueco) + 140px);
+                bottom: calc(var(--abajo) + 34px);
                 width: 68px;
                 height: 68px;
             }
 
             #t-arma {
-                right: calc(var(--hueco) + 16px);
-                bottom: calc(var(--abajo) + 104px);
+                right: calc(var(--hueco) + 38px);
+                bottom: calc(var(--abajo) + 138px);
                 width: 60px;
                 height: 60px;
             }
@@ -365,8 +390,9 @@
 
                 #t-info { left: var(--hueco); top: calc(var(--arriba-t) + 48px); }
                 #t-pantalla { right: var(--hueco); top: calc(var(--arriba-t) + 48px); }
-                #t-usar { right: calc(var(--hueco) + 12px); bottom: calc(var(--abajo) + 100px); }
-                #t-arma { right: calc(var(--hueco) + 16px); bottom: calc(var(--abajo) + 176px); }
+                #t-mira { right: calc(var(--hueco) + 12px); }
+                #t-usar { right: calc(var(--hueco) + 76px); bottom: calc(var(--abajo) + 134px); }
+                #t-arma { right: calc(var(--hueco) + 6px); bottom: calc(var(--abajo) + 138px); }
             }
 
             #empezar {
@@ -410,7 +436,7 @@
             </div>
             <div id="tactil" hidden>
                 <div id="t-base" aria-hidden="true"><div id="t-palo"></div></div>
-                <div class="t-btn" id="t-fuego" role="button" aria-label="Disparar">Fuego</div>
+                <div id="t-mira" role="button" aria-label="Girar y disparar"><div id="t-palo-mira">Fuego</div></div>
                 <div class="t-btn" id="t-usar" role="button" aria-label="Usar o abrir">Usar</div>
                 <div class="t-btn" id="t-arma" role="button" aria-label="Siguiente arma">Arma</div>
                 <div class="t-btn t-peq" id="t-menu" role="button">Menú</div>
@@ -431,9 +457,9 @@
             </div>
             <div id="controles" hidden>
                 <table id="controles-tactil">
-                    <tr><td>Moverse</td><td>dedo en la mitad izquierda (a tope, corre)</td></tr>
-                    <tr><td>Girar</td><td>arrastra en la mitad derecha o sobre Fuego</td></tr>
-                    <tr><td>Disparar</td><td>toca la mitad derecha (dedo quieto: seguido) o Fuego</td></tr>
+                    <tr><td>Moverse</td><td>círculo izquierdo (a tope, corre)</td></tr>
+                    <tr><td>Girar</td><td>arrastra el círculo derecho a los lados (más lejos, más rápido)</td></tr>
+                    <tr><td>Disparar</td><td>toca el círculo derecho; con el dedo quieto, dispara seguido</td></tr>
                     <tr><td>Usar</td><td>abrir puertas, pulsar interruptores, reaparecer</td></tr>
                     <tr><td>Arma</td><td>cambia a la siguiente</td></tr>
                 </table>
@@ -669,7 +695,8 @@
                 var zona = $("tactil");
                 var K = { arriba: 0xad, abajo: 0xaf, izq: 0xac, der: 0xae, esc: 27, enter: 13, tab: 9, espacio: 32, e: 101, a: 97, d: 100, s: 121, n: 110, mayus: 0xb6 };
                 var RADIO = 48; // px de recorrido del stick
-                var GIRO = 6; // unidades de ratón del motor por px de dedo
+                var GIRO_MAX = 60; // unidades de ratón del motor por paso con el círculo a tope (≈180°/s)
+                var GIRO_PASO_MS = 28; // un tic del motor
                 var TOQUE_MS = 220; // más que esto con el dedo quieto: disparo continuo
                 var TOQUE_PX = 10; // más que esto: es un arrastre, no un toque
                 var dedos = new Map(); // pointerId → { tipo, ... }
@@ -692,6 +719,8 @@
                     pulsadas.clear();
                     dedos.clear();
                     moverStick(0, 0);
+                    moverMira(0);
+                    $("t-mira").classList.remove("disparando");
                     ejes = { x: 0, y: 0, corre: 0 };
                 }
 
@@ -714,12 +743,26 @@
                     eje("corre", !menu && Math.hypot(lat, fre) > 0.9 ? K.mayus : 0);
                 }
 
-                function mirar(dx) {
-                    if (estado !== 0) return;
-                    resto += dx * GIRO;
+                // El círculo derecho marca una velocidad de giro, como un mando: mientras esté desplazado, gira.
+                // La curva da precisión cerca del centro y velocidad en el borde.
+                var giro = 0;
+                setInterval(() => {
+                    if (!giro || estado !== 0 || !Module._I_TouchLook) return;
+                    resto += giro;
                     var entero = Math.trunc(resto);
                     resto -= entero;
                     if (entero) Module._I_TouchLook(entero);
+                }, GIRO_PASO_MS);
+
+                function moverMira(dx) {
+                    var f = Math.max(-1, Math.min(1, dx / RADIO));
+                    $("t-palo-mira").style.transform = "translateX(" + f * RADIO * 0.8 + "px)";
+                    giro = Math.sign(f) * Math.pow(Math.abs(f), 1.6) * GIRO_MAX;
+                }
+
+                function enMira(x, y) {
+                    var r = $("t-mira").getBoundingClientRect();
+                    return Math.hypot(x - (r.left + r.right) / 2, y - (r.top + r.bottom) / 2) <= r.width / 2 + 24;
                 }
 
                 // Qué hace cada botón según estemos jugando, en un menú o en la portada.
@@ -728,10 +771,10 @@
                     if (id === "t-mapa") return estado === 0 ? { k: K.tab } : null;
                     if (id === "t-si") return { k: K.s };
                     if (id === "t-no") return { k: K.n };
-                    if (id === "t-fuego" || id === "t-usar") {
+                    if (id === "t-usar") {
                         if (estado === 1) return { k: K.enter };
                         if (estado === 3) return { k: K.esc };
-                        if (estado === 0) return { k: id === "t-fuego" ? K.espacio : K.e };
+                        if (estado === 0) return { k: K.e };
                     }
                     return null;
                 }
@@ -778,16 +821,21 @@
                         base.style.left = e.clientX - r.left - 60 + "px";
                         base.style.bottom = r.bottom - e.clientY - 60 + "px";
                         dedos.set(e.pointerId, { tipo: "stick", x0: e.clientX, y0: e.clientY });
-                    } else {
-                        if (estado === 3) {
-                            tecla(K.esc, true);
-                            dedos.set(e.pointerId, { tipo: "boton", k: K.esc, x: e.clientX });
-                        } else {
+                    } else if (estado === 3) {
+                        // En la portada, tocar a la derecha abre el menú.
+                        tecla(K.esc, true);
+                        dedos.set(e.pointerId, { tipo: "boton", k: K.esc });
+                    } else if (enMira(e.clientX, e.clientY)) {
+                        if (estado === 1) {
+                            tecla(K.enter, true);
+                            dedos.set(e.pointerId, { tipo: "boton", k: K.enter });
+                        } else if (estado === 0) {
                             // Arrastrar gira; un toque corto dispara; dejar el dedo quieto dispara seguido.
-                            var m = { tipo: "mirar", x: e.clientX, x0: e.clientX, y0: e.clientY, t: performance.now(), movido: false, fuego: false };
+                            var m = { tipo: "mira", x0: e.clientX, y0: e.clientY, t: performance.now(), movido: false, fuego: false };
                             m.espera = setTimeout(() => {
                                 if (dedos.get(e.pointerId) === m && !m.movido && estado === 0) {
                                     m.fuego = true;
+                                    $("t-mira").classList.add("disparando");
                                     tecla(K.espacio, true);
                                 }
                             }, TOQUE_MS);
@@ -809,13 +857,12 @@
                             dy *= RADIO / m;
                         }
                         moverStick(dx, dy);
-                    } else if (d.tipo === "mirar" || (d.tipo === "boton" && d.b && d.b.id === "t-fuego")) {
-                        if (d.tipo === "mirar" && !d.movido && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) > TOQUE_PX) {
+                    } else if (d.tipo === "mira") {
+                        if (!d.movido && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) > TOQUE_PX) {
                             d.movido = true;
                             clearTimeout(d.espera);
                         }
-                        mirar(e.clientX - d.x); // con Fuego pulsado también se puede girar
-                        d.x = e.clientX;
+                        if (d.movido || d.fuego) moverMira(e.clientX - d.x0);
                     }
                 });
 
@@ -828,8 +875,10 @@
                         var base = $("t-base");
                         base.style.left = "";
                         base.style.bottom = "";
-                    } else if (d.tipo === "mirar") {
+                    } else if (d.tipo === "mira") {
                         clearTimeout(d.espera);
+                        moverMira(0);
+                        $("t-mira").classList.remove("disparando");
                         if (d.fuego) {
                             tecla(K.espacio, false);
                         } else if (!d.movido && estado === 0 && performance.now() - d.t < TOQUE_MS) {
@@ -884,7 +933,16 @@
                     if (nuevo === estado) return;
                     estado = nuevo;
                     $("t-sino").hidden = estado !== 2;
-                    $("t-fuego").textContent = estado === 0 ? "Fuego" : "OK";
+                    $("t-palo-mira").textContent = estado === 0 ? "Fuego" : "OK";
+                    moverMira(0);
+                    $("t-mira").classList.remove("disparando");
+                    dedos.forEach((d, id) => {
+                        if (d.tipo === "mira") {
+                            clearTimeout(d.espera);
+                            if (d.fuego) tecla(K.espacio, false);
+                            dedos.delete(id);
+                        }
+                    });
                     $("t-usar").textContent = estado === 0 ? "Usar" : "OK";
                     moverStick(0, 0);
                     // Un stick mantenido seguiría empujando con la tecla equivocada: se recoloca con el siguiente movimiento.
